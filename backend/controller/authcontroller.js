@@ -115,7 +115,7 @@ export const login= async (req, res)=> {
         
     }
     catch(error){
-        res.status(400).json(error.message)
+        return res.status(400).json({sucess:false, message :error.message})
     }
     
 
@@ -144,7 +144,7 @@ export const forgotPassword = async(req, res) =>{
         user.resetPasswordExpiredAt =resetPasswordExpiredAt
         await user.save();
 
-        await sendPasswordResetEmail(user.email, ``)
+        await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`)
         res.status(200).json({
             success:true,
             message:"verification code sent",
@@ -152,6 +152,58 @@ export const forgotPassword = async(req, res) =>{
         })
         
     } catch (error) {
+        return res.status(400).json({sucess:false, message :error.message})
+        
+    }
+}
+
+export const resetpassword = async(req, res)=>{
+    
+    try {
+        const {token }= req.param;
+        const {password} = req.body;
+        const user = User.findOne({
+            resetPasswordToken:token,
+            resetPasswordExpiredAt:{$gt: Date.now()}
+        })
+        if(!user){
+            res.status(400).json({
+                success:false,
+                message:"invallid or expired reset password"
+            })
+        }
+
+        const hashedPassword = bycrptjs.hash(password, 10)
+        user.password=hashedPassword
+        user.resetPasswordToken= undefined
+        user.resetPasswordExpiredAt= undefined
+        await user.save()
+        await sendResetSuccessfulEmail(user.email)
+        res.status(200).json({
+            success:true,
+            message:"password change succesfully"
+        })
+
+
+        
+    } catch (error) {
+        return res.status(400).json({sucess:false, message :error.message})
+        
+    }
+}
+
+export const checkAuth  = async(req, res)=>{
+    try {
+        const user = await User.findById(req.userId).select("-password")
+        if(!user)
+        {
+            return res.status(400).json({sucess:false, message :"user not found"})
+        }
+        res.status(200).json({success:true, user})
+    } catch (error) {
+        console.log("Error in checkAuth", error);
+        return res.status(400).json({sucess:false, message :error.message})
+        
         
     }
 }
