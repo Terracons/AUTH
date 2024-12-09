@@ -1,6 +1,6 @@
 import express from "express"
 import { login, logout, signup, verifyEmail, forgotPassword,resetpassword,checkAuth} from "../controller/authcontroller.js"
-import { verifytoken } from "../../middleware/verifyToken.js"
+import { verifytoken } from "../middleware/verifyToken.js"
 
  const router = express.Router()
  router.get("/check-auth", verifytoken, checkAuth)
