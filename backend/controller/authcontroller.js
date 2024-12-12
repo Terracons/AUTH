@@ -20,7 +20,10 @@ export const signup = async (req, res)=>{
          const user = new User({
             email,
             password: hashedPassword,
-            name,
+            firstName ,
+            lastName,
+            username, 
+            phone,
             verificationToken,
             verificationTokenExpiredAt: Date.now() + 24*60*60*1000
 
