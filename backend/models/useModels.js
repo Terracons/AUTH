@@ -4,19 +4,33 @@ const userSchema = new mongoose.Schema({
     email:{
         type:String,
         unique:true,
-        require:true
+        required:true
     },
-    name:{
+    username:{
         type:String,
-        require:true
+        unique:true,
+        required:true
+    },
+    firstName:{
+        type:String,
+        required:true
+    },
+    lastName:{
+        type:String,
+        required:true
     },
     password:{
         type:String,
-        require:true
+        required:true
+    },
+    phone:{
+        type:String,
+        required:true
     },
     isVerified:{
         type:Boolean,
-        require:true
+        default:false
+        
     },
     lastlogin:{
         type:Date,

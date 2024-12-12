@@ -4,9 +4,9 @@ import { generateverificationcode,generateTokenSetCookies  } from "../utlitis/ut
 import { sendVerificationEmail, sendWelcomeEmail } from "../mailTrap/emails.js";
 import crypto from "crypto"
 export const signup = async (req, res)=>{
-    const{email, password, name} = req.body;
+    const{email, password, firstName , lastName, username, phone} = req.body;
     try {
-        if(!email || !password || !name){
+        if(!email || !password || !firstName || !lastName  || !username || !phone){
             throw new Error("All field must be filled")
          }
  
