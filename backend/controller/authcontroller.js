@@ -63,7 +63,7 @@ export const verifyEmail = async(req, res)=>{
         })
         if (!user){
            return res.status(400).json({success:false,
-                message: "invalid or expired verification code"})
+                message: " expired verification code"})
 
         }
         user.isverified = true
