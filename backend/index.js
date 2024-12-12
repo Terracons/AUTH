@@ -3,11 +3,15 @@ import {connectDB} from "./database/connectDb.js"
 import dotenv from "dotenv"
 import authRoutes from "./Router/authRoutes.js"
 import cookieParser from "cookie-parser";
+import cors from "cors"
 
 dotenv.config()
 const app = express()
 app.use(express.json())
 app.use(cookieParser())
+app.use(cors())
+
+
 connectDB()
 const PORT = process.env.PORT || 5000
 
