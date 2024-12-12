@@ -85,6 +85,7 @@ export const verifyEmail = async(req, res)=>{
 
 }
 export const login= async (req, res)=> {
+    const {email, password} = req.body
 
     try
     {
@@ -95,7 +96,7 @@ export const login= async (req, res)=> {
                 message:"email address not recognise"
             })
         }
-        const verifypassword = await bycrptjs.compare(password, User.password)
+        const verifypassword = await bycrptjs.compare(password, user.password)
         if(!verifypassword){
             return res.status(400).json({success:false, message:"invalid password"})
             
@@ -106,15 +107,16 @@ export const login= async (req, res)=> {
 
         res.status(200).json({
             success:true,
-            message:"Login succesfully",
+            message:"Login succesfull",
             user:{
-                ...User._doc,
+                ...user._doc,
                 password:undefined
             }
         })
         
     }
     catch(error){
+        console.log("login not succesful", error);
         return res.status(400).json({sucess:false, message :error.message})
     }
     
@@ -123,7 +125,7 @@ export const login= async (req, res)=> {
     
 }
 export const logout= (req, res)=>{
-    res.clearcookies("token")
+    res.clearCookie("token")
     res.status(200).json({success:true ,message: "Log out succesfully"})
     
 }
@@ -202,6 +204,19 @@ export const checkAuth  = async(req, res)=>{
         res.status(200).json({success:true, user})
     } catch (error) {
         console.log("Error in checkAuth", error);
+        return res.status(400).json({sucess:false, message :error.message})
+        
+        
+    }
+}
+
+export const viewUser = async(req, res)=>{
+    try {
+        const user = await User.find()
+    
+        res.status(200).json({success:true, user})
+    } catch (error) {
+        console.log("Error fecthing users", error);
         return res.status(400).json({sucess:false, message :error.message})
         
         

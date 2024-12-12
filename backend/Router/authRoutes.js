@@ -1,5 +1,5 @@
 import express from "express"
-import { login, logout, signup, verifyEmail, forgotPassword,resetpassword,checkAuth} from "../controller/authcontroller.js"
+import { login, logout, signup, verifyEmail, forgotPassword,resetpassword,checkAuth,viewUser} from "../controller/authcontroller.js"
 import { verifytoken } from "../middleware/verifyToken.js"
 
  const router = express.Router()
@@ -11,5 +11,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.post("/verify-email",verifyEmail)
  router.post("/forgot-password",forgotPassword)
  router.post("/reset-password/:token",resetpassword)
+ router.get("/veiw-user",viewUser)
+
 
 export default router
