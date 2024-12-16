@@ -44,9 +44,6 @@ export const signup = async (req, res)=>{
         })
          console.log(user)
 
-         
-        
-        
     } catch (error) {
         res.status(400).json({sucess:false, message :error.message})
         
@@ -92,7 +89,7 @@ export const login= async (req, res)=> {
     {
         const user = await User.findOne({email})
         if (!user) {
-            return res.status.json({
+            return res.status(400).json({
                 success:false,
                 message:"email address not recognise"
             })
