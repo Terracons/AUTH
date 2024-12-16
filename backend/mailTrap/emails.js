@@ -1,5 +1,5 @@
 import { verify } from "crypto"
-import { PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE } from "./emailTemplate.js"
+import { PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "./emailTemplate.js"
 import { mailtrap_client, sender } from "./mailtrap.js"
 import nodemailer from "nodemailer"
 
@@ -53,17 +53,14 @@ const transporter = nodemailer.createTransport({
 // }
 
 export const sendWelcomeEmail = async(email, name)=>{
-    const recipient = [{email}]
+    const recipient = email
     try {
-       const response = await mailtrap_client.send({
-        from: sender,
-        to: recipient,
-        template_uuid: "c11cb70d-c048-48d6-b6f3-17611297f53e",
-        template_variables: {
-      "company_info_name": "auth company",
-      "name": name
-
-       }})
+       const response = await transporter.sendMail({
+            from: sender, // sender address
+            to: recipient, // list of receivers
+            subject: "Welcome to Git pixel", // Subject line
+            html: WELCOME_EMAIL_TEMPLATE.replace("{firstName}", name),
+          });
        console.log("email sent successfully", response);
         
     }
