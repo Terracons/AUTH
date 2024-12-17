@@ -220,3 +220,51 @@ export const viewUser = async(req, res)=>{
         
     }
 }
+
+export const updatePromise = async (req, res) => {
+    const { promiseTitle, promiseDescription } = req.body;
+
+   
+    if (!promiseTitle || !promiseDescription) {
+        return res.status(400).json({
+            success: false,
+            message: "Both promiseTitle and promiseDescription must be provided."
+        });
+    }
+
+    try {
+       
+        const user = await User.findById(req.userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+    
+        user.promiseTitle = promiseTitle;
+        user.promiseDescription = promiseDescription;
+
+       
+        await user.save();
+
+      
+        res.status(200).json({
+            success: true,
+            message: "Promise details updated successfully.",
+            user: {
+                ...user._doc,
+                password: undefined,
+            }
+        });
+    } catch (error) {
+        console.log("Error updating promise details:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error. Could not update promise details.",
+        });
+    }
+};
+

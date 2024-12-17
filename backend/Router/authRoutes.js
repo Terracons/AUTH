@@ -12,6 +12,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.post("/forgot-password",forgotPassword)
  router.post("/reset-password/:token",resetpassword)
  router.get("/veiw-user",viewUser)
+ router.put("/update-promise", updatePromise);
 
 
 export default router

@@ -41,8 +41,16 @@ const userSchema = new mongoose.Schema({
     verificationToken:String,
     verificationTokenExpiredAt:Date,
     
-
-
+    
+ // New Fields Added
+    promiseTitle: {
+        type: String,
+        required: false // Optional field, set to false if not always required
+    },
+    promiseDescription: {
+        type: String,
+        required: false // Optional field, set to false if not always required
+    }
 
 
 
