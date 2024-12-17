@@ -108,8 +108,11 @@ export const login= async (req, res)=> {
             message:"Login succesfull",
             user:{
                 ...user._doc,
-                password:undefined
-            }        })
+                password:undefined,
+                token: token 
+            },
+            
+        })
         
     }
     catch(error){
