@@ -109,7 +109,8 @@ export const login= async (req, res)=> {
             user:{
                 ...user._doc,
                 password:undefined
-            }
+            },
+            token: token 
         })
         
     }
