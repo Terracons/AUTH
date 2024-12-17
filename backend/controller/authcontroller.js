@@ -265,6 +265,7 @@ export const updatePromise = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Promise details updated successfully.",
+            data : user,
             user: user.toObject({
                 versionKey: false,
                 transform: (doc, ret) => {
@@ -278,6 +279,61 @@ export const updatePromise = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error. Could not update promise details.",
+        });
+    }
+};
+
+export const deletePromise = async (req, res) => {
+    const { index, id } = req.body;
+
+    if (index === undefined || id === undefined) {
+        return res.status(400).json({
+            success: false,
+            message: "Both user ID and index of the promise to delete must be provided."
+        });
+    }
+
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        // Ensure the index is valid for both arrays
+        if (index < 0 || index >= user.promiseTitle.length || index >= user.promiseDescription.length) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid index. Promise not found."
+            });
+        }
+
+        // Remove the promise title and description at the given index
+        user.promiseTitle.splice(index, 1);
+        user.promiseDescription.splice(index, 1);
+
+        // Save the updated user document
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Promise details deleted successfully.",
+            user: user.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.password = undefined;
+                    return ret;
+                },
+            }),
+        });
+    } catch (error) {
+        console.error("Error deleting promise details:", error.stack);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error. Could not delete promise details.",
         });
     }
 };

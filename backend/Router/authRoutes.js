@@ -1,5 +1,5 @@
 import express from "express"
-import { login, logout, signup, verifyEmail, forgotPassword,resetpassword,checkAuth,viewUser, updatePromise} from "../controller/authcontroller.js"
+import { login, logout, signup, verifyEmail, forgotPassword,resetpassword,checkAuth,viewUser, updatePromise, deletePromise} from "../controller/authcontroller.js"
 import { verifytoken } from "../middleware/verifyToken.js"
 
  const router = express.Router()
@@ -13,6 +13,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.post("/reset-password/:token",resetpassword)
  router.get("/veiw-user",viewUser)
  router.put("/update-promise", updatePromise);
+ router.delete('/deletePromise', deletePromise);
 
 
 export default router
