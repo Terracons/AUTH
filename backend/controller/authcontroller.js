@@ -222,9 +222,8 @@ export const viewUser = async(req, res)=>{
 }
 
 export const updatePromise = async (req, res) => {
-    const { promiseTitle, promiseDescription } = req.body;
+    const { promiseTitle, promiseDescription, id } = req.body;
 
-   
     if (!promiseTitle || !promiseDescription) {
         return res.status(400).json({
             success: false,
@@ -232,9 +231,15 @@ export const updatePromise = async (req, res) => {
         });
     }
 
+    if (!id) {
+        return res.status(400).json({
+            success: false,
+            message: "User ID is required."
+        });
+    }
+
     try {
-       
-        const user = await User.findById(req.userId);
+        const user = await User.findById(id);
 
         if (!user) {
             return res.status(404).json({
@@ -243,7 +248,7 @@ export const updatePromise = async (req, res) => {
             });
         }
 
-    
+        
         user.promiseTitle = promiseTitle;
         user.promiseDescription = promiseDescription;
 
@@ -254,17 +259,19 @@ export const updatePromise = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Promise details updated successfully.",
-            user: {
-                ...user._doc,
-                password: undefined,
-            }
+            user: user.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.password = undefined;
+                    return ret;
+                },
+            }),
         });
     } catch (error) {
-        console.log("Error updating promise details:", error);
+        console.error("Error updating promise details:", error.stack);
         return res.status(500).json({
             success: false,
             message: "Internal server error. Could not update promise details.",
         });
     }
 };
-
