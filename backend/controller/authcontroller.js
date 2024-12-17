@@ -249,13 +249,19 @@ export const updatePromise = async (req, res) => {
         }
 
         
-        user.promiseTitle = promiseTitle;
-        user.promiseDescription = promiseDescription;
+        user.promiseTitle.push({
+            title: promiseTitle,
+            timestamp: Date.now()
+        });
+
+        user.promiseDescription.push({
+            description: promiseDescription,
+            timestamp: Date.now()
+        });
 
        
         await user.save();
 
-      
         res.status(200).json({
             success: true,
             message: "Promise details updated successfully.",

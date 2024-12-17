@@ -42,16 +42,20 @@ const userSchema = new mongoose.Schema({
     verificationTokenExpiredAt:Date,
     
     
- 
-    promiseTitle:[ {
-        type: String,
+    promiseTitle: [{
+        type: {
+            title: { type: String, required: false },
+            timestamp: { type: Date, default: Date.now }
+        },
         required: false
     }],
     promiseDescription: [{
-        type: String,
+        type: {
+            description: { type: String, required: false },
+            timestamp: { type: Date, default: Date.now }
+        },
         required: false 
     }]
-
 
 
 }, {timestamps:true})
