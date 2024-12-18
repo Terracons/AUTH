@@ -363,7 +363,13 @@ export const getPromiseDetails = async (req, res) => {
         }
 
        
-       
+        if (!user.promiseTitle || user.promiseTitle.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No promises found for this user."
+            });
+        }
+
         
         res.status(200).json({
             success: true,
