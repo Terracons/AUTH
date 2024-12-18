@@ -377,7 +377,7 @@ export const getPromiseDetails = async (req, res) => {
             promises: {
                 titles: user.promiseTitle,
                 descriptions: user.promiseDescription,
-                timeStamp: user.timestamps
+                timeStamp: user.titimestamps
             }
         });
 
