@@ -342,7 +342,7 @@ export const deletePromise = async (req, res) => {
 
 
 export const getPromiseDetails = async (req, res) => {
-    const { id } = req.params; // Assuming the user ID is passed as a route parameter
+    const { id } = req.params; 
 
     if (!id) {
         return res.status(400).json({
@@ -352,7 +352,7 @@ export const getPromiseDetails = async (req, res) => {
     }
 
     try {
-        const user = await User.findById(id).select('promiseTitle promiseDescription'); // Only select the promiseTitle and promiseDescription fields
+        const user = await User.findById(id).select('promiseTitle promiseDescription timestamps'); 
 
         if (!user) {
             return res.status(404).json({
