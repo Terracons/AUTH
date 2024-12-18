@@ -3,6 +3,7 @@ import bycrptjs from "bcryptjs"
 import { generateverificationcode,generateTokenSetCookies  } from "../utlitis/utilitis.js";
 import { sendVerificationEmail, sendWelcomeEmail } from "../mailTrap/emails.js";
 import crypto from "crypto"
+import { timeStamp } from "console";
 export const signup = async (req, res)=>{
     const{email, password, firstName , lastName, username, phone} = req.body;
     try {
@@ -375,7 +376,8 @@ export const getPromiseDetails = async (req, res) => {
             message: "Promises fetched successfully.",
             promises: {
                 titles: user.promiseTitle,
-                descriptions: user.promiseDescription
+                descriptions: user.promiseDescription,
+                timeStamp: user.timestamps
             }
         });
 
