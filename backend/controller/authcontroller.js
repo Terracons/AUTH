@@ -339,3 +339,52 @@ export const deletePromise = async (req, res) => {
         });
     }
 };
+
+
+export const getPromiseDetails = async (req, res) => {
+    const { id } = req.params; // Assuming the user ID is passed as a route parameter
+
+    if (!id) {
+        return res.status(400).json({
+            success: false,
+            message: "User ID is required."
+        });
+    }
+
+    try {
+        const user = await User.findById(id).select('promiseTitle promiseDescription'); // Only select the promiseTitle and promiseDescription fields
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+       
+        if (!user.promiseTitle || user.promiseTitle.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No promises found for this user."
+            });
+        }
+
+        
+        res.status(200).json({
+            success: true,
+            message: "Promises fetched successfully.",
+            promises: {
+                titles: user.promiseTitle,
+                descriptions: user.promiseDescription
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching promise details:", error.stack);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error. Could not fetch promise details."
+        });
+    }
+};
+
