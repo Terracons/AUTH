@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
     
     promiseTitle: [{
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Unique ID for each promise
-        title: { type: String, required: true },
+        title: { type: String, required: false },
         timestamp: { type: Date, default: Date.now },
         requestingFor: {
             type: String, // 'gift' or 'money'
