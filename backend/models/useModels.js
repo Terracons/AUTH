@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
         requestingFor: {
             type: String, // 'gift' or 'money'
             enum: ['gift', 'money'],
-            required: true
+            required: false
         },
         giftItem: {
             url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
