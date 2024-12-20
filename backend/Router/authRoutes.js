@@ -1,5 +1,19 @@
 import express from "express"
-import { login, logout, signup, verifyEmail, forgotPassword,resetpassword,checkAuth,viewUser, updatePromise, deletePromise, getPromiseDetails} from "../controller/authcontroller.js"
+import { 
+    login, 
+    logout, 
+    signup, 
+    verifyEmail, 
+    forgotPassword,
+    resetpassword,
+    checkAuth,
+    viewUser, 
+    updatePromise,  
+    deletePromise, 
+    getPromiseDetails,
+    updatePromiseWithGiftOrMoney
+
+} from "../controller/authcontroller.js"
 import { verifytoken } from "../middleware/verifyToken.js"
 
  const router = express.Router()
@@ -15,6 +29,8 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.put("/update-promise", updatePromise);
  router.delete('/deletePromise', deletePromise);
  router.get('/user/:id/promises', getPromiseDetails);
+ router.put("/update-promise-gift-money", updatePromiseWithGiftOrMoney);
+
 
 
 export default router
