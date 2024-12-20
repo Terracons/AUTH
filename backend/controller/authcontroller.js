@@ -384,3 +384,84 @@ export const getPromiseDetails = async (req, res) => {
     }
 };
 
+
+export const updatePromiseWithGiftOrMoney = async (req, res) => {
+    const { promiseId, requestingFor, giftItem, money, userId } = req.body;
+
+    if (!promiseId || !requestingFor || !userId) {
+        return res.status(400).json({
+            success: false,
+            message: "Promise ID, requestingFor type, and user ID are required."
+        });
+    }
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        // Find the promise by promiseId within the user's promises
+        const promise = user.promiseTitle.id(promiseId); // Using .id() to find the promise by its _id
+
+        if (!promise) {
+            return res.status(404).json({
+                success: false,
+                message: "Promise not found."
+            });
+        }
+
+        // Validate and update the promise depending on the 'requestingFor' type
+        if (requestingFor === 'gift') {
+            if (!giftItem || !giftItem.url) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Gift URL is required for gift requests."
+                });
+            }
+            // Update the promise with the gift item URL
+            promise.giftItem = giftItem;
+        } else if (requestingFor === 'money') {
+            if (typeof money?.price !== 'number') {
+                return res.status(400).json({
+                    success: false,
+                    message: "Price is required for money requests and must be a number."
+                });
+            }
+            // Update the promise with the money price
+            promise.money = money;
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid requestingFor value. It should be either 'gift' or 'money'."
+            });
+        }
+
+        // Save the updated user document
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Promise updated successfully.",
+            user: user.toObject({
+                versionKey: false,
+                transform: (doc, ret) => {
+                    ret.password = undefined; // Hide password in response
+                    return ret;
+                },
+            }),
+        });
+    } catch (error) {
+        console.error("Error updating promise with gift or money:", error.stack);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error. Could not update promise.",
+        });
+    }
+};
+
+

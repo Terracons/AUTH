@@ -1,54 +1,62 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-    email:{
-        type:String,
-        unique:true,
-        required:true
+    email: {
+        type: String,
+        unique: true,
+        required: true
     },
-    username:{
-        type:String,
-        unique:true,
-        required:true
+    username: {
+        type: String,
+        unique: true,
+        required: true
     },
-    firstName:{
-        type:String,
-        required:true
+    firstName: {
+        type: String,
+        required: true
     },
-    lastName:{
-        type:String,
-        required:true
+    lastName: {
+        type: String,
+        required: true
     },
-    password:{
-        type:String,
-        required:true
+    password: {
+        type: String,
+        required: true
     },
-    phone:{
-        type:String,
-        required:true
+    phone: {
+        type: String,
+        required: true
     },
-    isVerified:{
-        type:Boolean,
-        default:false
-        
+    isVerified: {
+        type: Boolean,
+        default: false
     },
-    lastlogin:{
-        type:Date,
-        default:Date.now()
+    lastlogin: {
+        type: Date,
+        default: Date.now()
     },
-    resetPasswordToken:String,
-    resetPasswordExpiredAt:Date,
-    verificationToken:String,
-    verificationTokenExpiredAt:Date,
-    
+    resetPasswordToken: String,
+    resetPasswordExpiredAt: Date,
+    verificationToken: String,
+    verificationTokenExpiredAt: Date,
     
     promiseTitle: [{
-        type: {
-            title: { type: String, required: false },
-            timestamp: { type: Date, default: Date.now }
+        _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Unique ID for each promise
+        title: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        requestingFor: {
+            type: String, // 'gift' or 'money'
+            enum: ['gift', 'money'],
+            required: true
         },
-        required: false
+        giftItem: {
+            url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
+        },
+        money: {
+            price: { type: Number, required: function() { return this.requestingFor === 'money'; } }
+        }
     }],
+
     promiseDescription: [{
         type: {
             description: { type: String, required: false },
@@ -56,10 +64,7 @@ const userSchema = new mongoose.Schema({
         },
         required: false 
     }]
+}, { timestamps: true });
 
-
-}, {timestamps:true})
-
-
-export const User = new mongoose.model('user', userSchema)
-
+// Export the model
+export const User = mongoose.model('user', userSchema);
