@@ -441,7 +441,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             });
         }
 
-        // Save the updated user document
+      
         await user.save();
 
         res.status(200).json({
@@ -450,7 +450,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             user: user.toObject({
                 versionKey: false,
                 transform: (doc, ret) => {
-                    ret.password = undefined; // Hide password in response
+                    ret.password = undefined; 
                     return ret;
                 },
             }),
