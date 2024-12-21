@@ -523,7 +523,7 @@ export const getUserRequests = async (req, res) => {
               return res.status(404).json({ message: 'No requests found for this user' });
           }
   
-          // Return the promises to the client
+          // Return the promises to the client 
           return res.status(200).json({ promises });
       } catch (error) {
           console.error(error);
