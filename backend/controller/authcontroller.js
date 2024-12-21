@@ -464,18 +464,27 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
     }
 };
 
-export const findPromiseWithId =  async (req, res) => {
+ 
+  export const findPromiseWithId =  async (req, res) => {
     try {
-      const promiseId = req.params.id;
-      const user = await User.findOne({ 'promiseTitle._id': promiseId }, { 'promiseTitle.$': 1 });
-      if (!user) {
-        return res.status(404).json({ message: "Promise not found" });
-      }
-      const promise = user.promiseTitle[0]; 
-      res.json(promise);
+      const { promiseId, type, input } = req.body;
+  
+      // You can save the request in the database, either as money or gift request
+      const newRequest = {
+        promiseId,
+        type,
+        input,  // Either amount for money or URL for gift
+        status: 'pending',
+        timestamp: new Date(),
+      };
+  
+      // Save to the database (assumed models)
+      const savedRequest = await Request.create(newRequest);
+  
+      res.status(200).json({ request: savedRequest, message: "Request submitted successfully!" });
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: "Error submitting request", error });
     }
-  };
+  });
   
 
