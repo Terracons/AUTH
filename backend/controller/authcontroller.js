@@ -464,9 +464,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
     }
 };
 
-
-
-app.get('/api/auth/user/promise/:id', async (req, res) => {
+export const findPromiseWithId =  async (req, res) => {
     try {
       const promiseId = req.params.id;
       const user = await User.findOne({ 'promiseTitle._id': promiseId }, { 'promiseTitle.$': 1 });
@@ -478,6 +476,6 @@ app.get('/api/auth/user/promise/:id', async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  };
   
 
