@@ -31,7 +31,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.delete('/deletePromise', deletePromise);
  router.get('/user/:id/promises', getPromiseDetails);
  router.put("/update-promise-gift-money", updatePromiseWithGiftOrMoney);
- router.get('promise/:id', findPromiseWithId);
+ router.get('/promise/:id', findPromiseWithId);
 
 
 
