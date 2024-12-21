@@ -465,3 +465,19 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 };
 
 
+
+app.get('/api/auth/user/promise/:id', async (req, res) => {
+    try {
+      const promiseId = req.params.id;
+      const user = await User.findOne({ 'promiseTitle._id': promiseId }, { 'promiseTitle.$': 1 });
+      if (!user) {
+        return res.status(404).json({ message: "Promise not found" });
+      }
+      const promise = user.promiseTitle[0]; 
+      res.json(promise);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+
