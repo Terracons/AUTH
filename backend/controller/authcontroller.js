@@ -488,3 +488,46 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
   };
   
 
+ 
+  // Controller function to get user promises
+export const getUserRequests = async (req, res) => {
+      try {
+          const userId = req.params.userId; // Assuming user ID is passed in the request params
+          
+          // Fetch user from database
+          const user = await User.findById(userId).select('promiseTitle');
+          
+          if (!user) {
+              return res.status(404).json({ message: 'User not found' });
+          }
+  
+          // Extracting the user's promises based on what they're requesting
+          const promises = user.promiseTitle.map(promise => {
+              if (promise.requestingFor === 'gift') {
+                  return {
+                      title: promise.title,
+                      timestamp: promise.timestamp,
+                      giftUrl: promise.giftItem.url, // Display URL if it's a gift
+                  };
+              } else if (promise.requestingFor === 'money') {
+                  return {
+                      title: promise.title,
+                      timestamp: promise.timestamp,
+                      amountRequested: promise.money.price, // Display amount if it's for money
+                  };
+              }
+              return null;
+          }).filter(promise => promise !== null); // Remove any null values
+  
+          if (promises.length === 0) {
+              return res.status(404).json({ message: 'No requests found for this user' });
+          }
+  
+          // Return the promises to the client
+          return res.status(200).json({ promises });
+      } catch (error) {
+          console.error(error);
+          return res.status(500).json({ message: 'Internal server error' });
+      }
+  };
+  
