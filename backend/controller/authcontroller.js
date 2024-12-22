@@ -490,44 +490,41 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 
  
   // Controller function to get user promises
-export const getUserRequests = async (req, res) => {
-      try {
-          const userId = req.params.userId; // Assuming user ID is passed in the request params
-          
-          // Fetch user from database
-          const user = await User.findById(userId).select('promiseTitle');
-          
-          if (!user) {
-              return res.status(404).json({ message: 'User not found' });
-          }
+export const getUserRequests = ('/user/:userId/requestingFor', async (req, res) => {
+    try {
+      const { userId } = req.params;
   
-          // Extracting the user's promises based on what they're requesting
-          const promises = user.promiseTitle.map(promise => {
-              if (promise.requestingFor === 'gift') {
-                  return {
-                      title: promise.title,
-                      timestamp: promise.timestamp,
-                      giftUrl: promise.giftItem.url, // Display URL if it's a gift
-                  };
-              } else if (promise.requestingFor === 'money') {
-                  return {
-                      title: promise.title,
-                      timestamp: promise.timestamp,
-                      amountRequested: promise.money.price, // Display amount if it's for money
-                  };
-              }
-              return null;
-          }).filter(promise => promise !== null); // Remove any null values
+      // Find the user by userId and select only the 'promiseTitle' field
+      const user = await User.findById(userId).select('promiseTitle');
   
-          if (promises.length === 0) {
-              return res.status(404).json({ message: 'No requests found for this user' });
-          }
-  
-          // Return the promises to the client 
-          return res.status(200).json({ promises });
-      } catch (error) {
-          console.error(error);
-          return res.status(500).json({ message: 'Internal server error' });
+      // If no user is found, return an error message
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
       }
-  };
   
+      // Filter the promiseTitle array to include only those where 'requestingFor' is set
+      const requestingForPromises = user.promiseTitle.filter(promise => promise.requestingFor);
+  
+      // Map over the filtered promises to return the necessary details (money or gift)
+      const formattedPromises = requestingForPromises.map(promise => {
+        if (promise.requestingFor === 'money') {
+          return {
+            requestingFor: promise.requestingFor,
+            price: promise.money?.price, // Only include the price if it's a money request
+          };
+        } else if (promise.requestingFor === 'gift') {
+          return {
+            requestingFor: promise.requestingFor,
+            giftItemUrl: promise.giftItem?.url, // Only include the URL if it's a gift request
+          };
+        }
+        return null; 
+      }).filter(Boolean); 
+  
+      // Respond with the filtered promises
+      res.json(formattedPromises);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
