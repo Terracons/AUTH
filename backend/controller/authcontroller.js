@@ -490,12 +490,12 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 
  
   // Controller function to get user promises
-export const getUserRequests =  async (req, res) => {
+export const getUserRequests =   async (req, res) => {
     try {
       const { username } = req.params;
   
       // Find the user by username and select only the 'promiseTitle' field
-      const user = await User.findById(username).select('promiseTitle');
+      const user = await User.findOne({ username }).select('promiseTitle');
   
       // If no user is found, return an error message
       if (!user) {
@@ -518,8 +518,8 @@ export const getUserRequests =  async (req, res) => {
             giftItemUrl: promise.giftItem?.url, // Only include the URL if it's a gift request
           };
         }
-        return null; 
-      }).filter(Boolean); 
+        return null; // Shouldn't happen but just a safety check
+      }).filter(Boolean); // Remove any null values
   
       // Respond with the filtered promises
       res.json(formattedPromises);
