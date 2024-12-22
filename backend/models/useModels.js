@@ -44,11 +44,11 @@ const userSchema = new mongoose.Schema({
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Unique ID for each promise
         title: { type: String, required: false },
         timestamp: { type: Date, default: Date.now },
-        requestingFor: {
+        requestingFor: [{
             type: String, // 'gift' or 'money'
             enum: ['gift', 'money'],
             required: false
-        },
+        }],
         giftItem: {
             url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
         },
