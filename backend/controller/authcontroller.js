@@ -490,7 +490,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 
  
   // Controller function to get user promises
-export const getUserRequests = ('/user/:username/requestingFor', async (req, res) => {
+export const getUserRequests =  async (req, res) => {
     try {
       const { username } = req.params;
   
@@ -527,4 +527,4 @@ export const getUserRequests = ('/user/:username/requestingFor', async (req, res
       console.error(error);
       res.status(500).json({ message: 'Server error' });
     }
-  });
+  };
