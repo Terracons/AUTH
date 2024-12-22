@@ -197,7 +197,7 @@ export const resetpassword = async(req, res)=>{
 
 export const checkAuth  = async(req, res)=>{
     try {
-        const user = await User.findById(req.userId).select("-password")
+        const user = await User.findById(req.username).select("-password")
         if(!user)
         {
             return res.status(400).json({sucess:false, message :"user not found"})
@@ -386,9 +386,9 @@ export const getPromiseDetails = async (req, res) => {
 
 
 export const updatePromiseWithGiftOrMoney = async (req, res) => {
-    const { promiseId, requestingFor, giftItem, money, userId } = req.body;
+    const { promiseId, requestingFor, giftItem, money, username } = req.body;
 
-    if (!promiseId || !requestingFor || !userId) {
+    if (!promiseId || !requestingFor || !username) {
         return res.status(400).json({
             success: false,
             message: "Promise ID, requestingFor type, and user ID are required."
@@ -396,7 +396,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
     }
 
     try {
-        const user = await User.findById(userId);
+        const user = await User.findById(username);
 
         if (!user) {
             return res.status(404).json({
@@ -490,12 +490,12 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 
  
   // Controller function to get user promises
-export const getUserRequests = ('/user/:userId/requestingFor', async (req, res) => {
+export const getUserRequests = ('/user/:username/requestingFor', async (req, res) => {
     try {
-      const { userId } = req.params;
+      const { username } = req.params;
   
-      // Find the user by userId and select only the 'promiseTitle' field
-      const user = await User.findById(userId).select('promiseTitle');
+      // Find the user by username and select only the 'promiseTitle' field
+      const user = await User.findById(username).select('promiseTitle');
   
       // If no user is found, return an error message
       if (!user) {
