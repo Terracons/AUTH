@@ -33,7 +33,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.get('/user/:id/promises', getPromiseDetails);
  router.put("/update-promise-gift-money", updatePromiseWithGiftOrMoney);
  router.get('/submit-request', findPromiseWithId);
- router.get('user/:username/requests', getUserRequests);
+ router.get('/user/:username/requests', getUserRequests);
 
 
 
