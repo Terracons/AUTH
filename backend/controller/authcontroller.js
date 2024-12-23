@@ -385,7 +385,7 @@ export const getPromiseDetails = async (req, res) => {
 };
 
 
-export const updatePromiseWithGiftOrMoney = async (req, res) => {
+export const updatePromiseWithGiftOrMoney = async (req, res) => {   
     const { promiseId, requestingFor, giftItem, money, username } = req.body;
 
     if (!promiseId || !requestingFor || !username) {
@@ -461,6 +461,45 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             success: false,
             message: "Internal server error. Could not update promise.",
         });
+    }
+};
+
+
+const updatePromiseRequest = async (userId, promiseId, newRequestingFor, newGiftItem, newMoneyPrice) => {
+    try {
+        // Find the user by their ID
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Find the promise by its ID within the user's promiseTitle array
+        const promise = user.promiseTitle.id(promiseId);
+        
+        if (!promise) {
+            throw new Error('Promise not found');
+        }
+
+        // Update the 'requestingFor' field
+        promise.requestingFor = [newRequestingFor]; // Assuming 'newRequestingFor' is 'gift' or 'money'
+
+        // Conditionally update the giftItem or money field based on 'requestingFor'
+        if (newRequestingFor === 'gift') {
+            promise.giftItem = { url: newGiftItem }; // Ensure 'newGiftItem' is a valid URL string
+            promise.money = {}; // Clear the money field if it's a gift
+        } else if (newRequestingFor === 'money') {
+            promise.money = { price: newMoneyPrice }; // Ensure 'newMoneyPrice' is a valid number
+            promise.giftItem = {}; // Clear the giftItem field if it's money
+        }
+
+        // Save the updated user document
+        await user.save();
+
+        return user;
+    } catch (error) {
+        console.error('Error updating promise request:', error);
+        throw error;
     }
 };
 
