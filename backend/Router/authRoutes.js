@@ -37,7 +37,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.put("/updatePromiseRequest", updatePromiseRequest);
  router.get('/submit-request', findPromiseWithId);
  router.get('/user/:username/requests', getUserRequests);
- router.post('/get-promises', getPromisesWithRequests);
+ router.get('/promises/:username', getPromisesWithRequests); // Username is passed as a route parameter
 
 
 // more controllers below

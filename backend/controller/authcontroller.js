@@ -588,8 +588,9 @@ export const getUserRequests =   async (req, res) => {
   };
 
 
-  export const getPromisesWithRequests = async (req, res) => {
-    const { username } = req.body; // Get the username from the request body
+
+export const getPromisesWithRequests = async (req, res) => {
+    const { username } = req.params; // Get the username from the route parameters
 
     if (!username) {
         return res.status(400).json({
@@ -648,3 +649,4 @@ export const getUserRequests =   async (req, res) => {
         });
     }
 };
+
