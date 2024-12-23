@@ -41,22 +41,25 @@ const userSchema = new mongoose.Schema({
     verificationTokenExpiredAt: Date,
     
     promiseTitle: [{
-        _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Unique ID for each promise
+        _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
         title: { type: String, required: false },
         timestamp: { type: Date, default: Date.now },
-        requestingFor: {
-            type: String, // 'gift' or 'money'
-            enum: ['gift', 'money'],
-            required: false
-        },
-        giftItem: {
-            url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
-        },
-        money: {
-            price: { type: Number, required: function() { return this.requestingFor === 'money'; } }
-        }
-    }],
-
+        requests: [{ // This field will hold all requests (gift or money) for a promise
+            requestingFor: {
+                type: String, 
+                enum: ['gift', 'money'], 
+                required: true
+            },
+            giftItem: {
+                url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
+            },
+            money: {
+                price: { type: Number, required: function() { return this.requestingFor === 'money'; } }
+            },
+            timestamp: { type: Date, default: Date.now }
+        }]
+    }]
+});
     promiseDescription: [{
         type: {
             description: { type: String, required: false },

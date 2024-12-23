@@ -416,7 +416,12 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             });
         }
 
-        // Validate and update the promise depending on the 'requestingFor' type
+        // Prepare the new request details
+        const newRequest = {
+            requestingFor: requestingFor,
+            timestamp: new Date(),
+        };
+
         if (requestingFor === 'gift') {
             if (!giftItem || !giftItem.url) {
                 return res.status(400).json({
@@ -425,10 +430,8 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
                 });
             }
 
-            // Set the 'requestingFor' field and update the gift item
-            promise.requestingFor = requestingFor;
-            promise.giftItem = giftItem;
-
+            // Add the new gift item to the request
+            newRequest.giftItem = giftItem;
         } else if (requestingFor === 'money') {
             if (typeof money?.price !== 'number') {
                 return res.status(400).json({
@@ -437,10 +440,8 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
                 });
             }
 
-            // Set the 'requestingFor' field and update the money price
-            promise.requestingFor = requestingFor;
-            promise.money = money;
-
+            // Add the money price to the request
+            newRequest.money = money;
         } else {
             return res.status(400).json({
                 success: false,
@@ -448,17 +449,22 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             });
         }
 
-        // Mark modified fields in the promise document (if necessary)
-        promise.markModified('requestingFor');
-        promise.markModified('giftItem');
-        promise.markModified('money');
+        // Add the new request to the promiseTitle request array
+        if (!promise.requests) {
+            promise.requests = []; // Initialize if no requests exist yet
+        }
 
-        // Save the user document after updating the promise
+        promise.requests.push(newRequest);  // Append new request (gift or money) to the existing ones
+
+        // Mark the requests field as modified to ensure it is saved properly
+        promise.markModified('requests');
+
+        // Save the user document with the updated promise
         await user.save();
 
         res.status(200).json({
             success: true,
-            message: "Promise updated successfully.",
+            message: "New request added successfully to the promise.",
             user: user.toObject({
                 versionKey: false,
                 transform: (doc, ret) => {
@@ -469,10 +475,10 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error updating promise with gift or money:", error.stack);
+        console.error("Error adding new request to promise:", error.stack);
         return res.status(500).json({
             success: false,
-            message: "Internal server error. Could not update promise.",
+            message: "Internal server error. Could not add request.",
         });
     }
 };
