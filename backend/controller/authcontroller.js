@@ -396,6 +396,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
     }
 
     try {
+        // Find the user by their username (assuming username is unique)
         const user = await User.findById(username);
 
         if (!user) {
@@ -423,8 +424,11 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
                     message: "Gift URL is required for gift requests."
                 });
             }
-            // Update the promise with the gift item URL
+
+            // Set the 'requestingFor' field and update the gift item
+            promise.requestingFor = requestingFor;
             promise.giftItem = giftItem;
+
         } else if (requestingFor === 'money') {
             if (typeof money?.price !== 'number') {
                 return res.status(400).json({
@@ -432,8 +436,11 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
                     message: "Price is required for money requests and must be a number."
                 });
             }
-            // Update the promise with the money price
+
+            // Set the 'requestingFor' field and update the money price
+            promise.requestingFor = requestingFor;
             promise.money = money;
+
         } else {
             return res.status(400).json({
                 success: false,
@@ -441,7 +448,12 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             });
         }
 
-      
+        // Mark modified fields in the promise document (if necessary)
+        promise.markModified('requestingFor');
+        promise.markModified('giftItem');
+        promise.markModified('money');
+
+        // Save the user document after updating the promise
         await user.save();
 
         res.status(200).json({
@@ -450,11 +462,12 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             user: user.toObject({
                 versionKey: false,
                 transform: (doc, ret) => {
-                    ret.password = undefined; 
+                    ret.password = undefined; // Remove password from the response
                     return ret;
                 },
             }),
         });
+
     } catch (error) {
         console.error("Error updating promise with gift or money:", error.stack);
         return res.status(500).json({
