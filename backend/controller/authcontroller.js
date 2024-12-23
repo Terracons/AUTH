@@ -589,7 +589,7 @@ export const getUserRequests =   async (req, res) => {
 
 
 
-export const getPromisesWithRequests = async (req, res) => {
+  export const getPromisesWithRequests = async (req, res) => {
     const { username } = req.params; // Get the username from the route parameters
 
     if (!username) {
