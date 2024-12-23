@@ -14,7 +14,8 @@ import {
     updatePromiseWithGiftOrMoney,
     findPromiseWithId,
     getUserRequests,
-    updatePromiseRequest
+    updatePromiseRequest,
+    getPromisesWithRequests
 
 } from "../controller/authcontroller.js"
 import { verifytoken } from "../middleware/verifyToken.js"
@@ -36,6 +37,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.put("/updatePromiseRequest", updatePromiseRequest);
  router.get('/submit-request', findPromiseWithId);
  router.get('/user/:username/requests', getUserRequests);
+ router.get('/promises/requests', getPromisesWithRequests);
 
 
 // more controllers below

@@ -586,3 +586,65 @@ export const getUserRequests =   async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   };
+
+
+export const getPromisesWithRequests = async (req, res) => {
+    const { username } = req.query; // Get the username from the query parameters
+
+    if (!username) {
+        return res.status(400).json({
+            success: false,
+            message: "Username is required."
+        });
+    }
+
+    try {
+        // Find the user by username (assuming username is unique)
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+        // Iterate over each promise and format the response
+        const formattedPromises = user.promiseTitle.map(promise => {
+            const formattedRequests = promise.requests.map(request => {
+                if (request.requestingFor === 'gift') {
+                    return {
+                        type: 'Gift',
+                        url: request.giftItem?.url || 'No gift URL available',
+                        timestamp: request.timestamp
+                    };
+                } else if (request.requestingFor === 'money') {
+                    return {
+                        type: 'Money',
+                        price: request.money?.price || 'No price available',
+                        timestamp: request.timestamp
+                    };
+                }
+                return {}; // Default empty object if something is wrong
+            });
+
+            return {
+                promiseId: promise._id,
+                title: promise.title,
+                timestamp: promise.timestamp,
+                requests: formattedRequests
+            };
+        });
+
+        res.status(200).json({
+            success: true,
+            promises: formattedPromises
+        });
+    } catch (error) {
+        console.error("Error fetching promises and requests:", error.stack);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error. Could not fetch promises."
+        });
+    }
+};
