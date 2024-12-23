@@ -465,7 +465,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 };
 
 
-const updatePromiseRequest = async (userId, promiseId, newRequestingFor, newGiftItem, newMoneyPrice) => {
+export const updatePromiseRequest = async (userId, promiseId, newRequestingFor, newGiftItem, newMoneyPrice) => {
     try {
         // Find the user by their ID
         const user = await User.findById(userId);
