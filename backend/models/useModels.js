@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
         title: { type: String, required: false },
         timestamp: { type: Date, default: Date.now },
-        requests: [{ // This field will hold all requests (gift or money) for a promise
+       
             requestingFor: {
                 type: String, 
                 enum: ['gift', 'money'], 
