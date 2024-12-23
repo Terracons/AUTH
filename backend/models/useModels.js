@@ -33,41 +33,35 @@ const userSchema = new mongoose.Schema({
     },
     lastlogin: {
         type: Date,
-        default: Date.now()
+        default: Date.now
     },
     resetPasswordToken: String,
     resetPasswordExpiredAt: Date,
     verificationToken: String,
     verificationTokenExpiredAt: Date,
-    
+
     promiseTitle: [{
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
         title: { type: String, required: false },
         timestamp: { type: Date, default: Date.now },
-       
-            requestingFor: {
-                type: String, 
-                enum: ['gift', 'money'], 
-                required: true
-            },
-            giftItem: {
-                url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
-            },
-            money: {
-                price: { type: Number, required: function() { return this.requestingFor === 'money'; } }
-            },
-            timestamp: { type: Date, default: Date.now }
-        }]
-    }]
-});
-    promiseDescription: [{
-        type: {
-            description: { type: String, required: false },
-            timestamp: { type: Date, default: Date.now }
+
+        requestingFor: {
+            type: String, 
+            enum: ['gift', 'money'], 
+            required: true
         },
-        required: false 
+        giftItem: {
+            url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
+        },
+        money: {
+            price: { type: Number, required: function() { return this.requestingFor === 'money'; } }
+        },
+    }],
+    
+    promiseDescription: [{
+        description: { type: String, required: false },
+        timestamp: { type: Date, default: Date.now }
     }]
-, { timestamps: true };
+}, { timestamps: true });
 
-
-export const User = mongoose.model('user', userSchema);
+export const User = mongoose.model('User', userSchema);
