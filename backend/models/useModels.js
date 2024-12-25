@@ -45,11 +45,11 @@ const userSchema = new mongoose.Schema({
         title: { type: String, required: false },
         timestamp: { type: Date, default: Date.now },
 
-        requestingFor: {
+        requestingFor: [{
             type: String, 
             enum: ['gift', 'money'], 
             required: false
-        },
+        }],
         giftItem: {
             url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
         },
