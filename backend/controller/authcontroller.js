@@ -389,6 +389,9 @@ export const addRequestToPromise = async (req, res) => {
     const { userId, promiseTitleId, requestType, requestValue } = req.body;
 
     try {
+        // Log the incoming request for debugging
+        console.log("Request body:", req.body);
+
         // Find the user by userId
         const user = await User.findById(userId);
         if (!user) {
@@ -406,13 +409,17 @@ export const addRequestToPromise = async (req, res) => {
             return res.status(400).json({ message: 'Invalid request type. Must be "money" or "url"' });
         }
 
-        // if (requestType === 'money' ) {
-        //     return res.status(400).json({ message: 'For money requests, the value must be a number' });
-        // }
+        if (requestType === 'money' && typeof requestValue !== 'number') {
+            return res.status(400).json({ message: 'For "money" request, the value must be a number' });
+        }
 
-        // if (requestType === 'url' ) {
-        //     return res.status(400).json({ message: 'For URL requests, the value must be a string' });
-        // }
+        if (requestType === 'url' && typeof requestValue !== 'string') {
+            return res.status(400).json({ message: 'For "url" request, the value must be a string' });
+        }
+
+        if (requestType === 'url' && !/^https?:\/\/[^\s]+$/.test(requestValue)) {
+            return res.status(400).json({ message: 'Invalid URL format' });
+        }
 
         // Add the new request to the promiseTitle's requests array
         promiseTitle.requests.push({
@@ -430,6 +437,7 @@ export const addRequestToPromise = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 
  
