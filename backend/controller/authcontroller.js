@@ -487,8 +487,40 @@ export const addRequestToPromise = async (req, res) => {
       });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: error });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   };
   
 
+  export const getRequestsByTitleId = async (req, res) => {
+    const { promiseTitleId } = req.query; // Get the promiseTitleId from query params
+
+    try {
+        // Convert the promiseTitleId to a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(promiseTitleId)) {
+            return res.status(400).json({ message: 'Invalid promiseTitle ID' });
+        }
+
+        // Find the user who has the specific promiseTitleId
+        const user = await User.findOne({
+            'promiseTitle._id': mongoose.Types.ObjectId(promiseTitleId) // Search for the promiseTitle by its _id
+        }, {
+            'promiseTitle.$': 1, // Use the positional operator to return only the matching promiseTitle
+            _id: 0 // Exclude the _id field from the response
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found or no matching promise title' });
+        }
+
+        // Extract the specific promiseTitle from the response
+        const promiseTitle = user.promiseTitle[0]; // We expect only one matching promiseTitle based on the _id
+
+        // Return the requests related to the specific promiseTitle
+        res.json(promiseTitle.requests);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

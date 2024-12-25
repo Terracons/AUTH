@@ -13,7 +13,8 @@ import {
     getPromiseDetails,
     findPromiseWithId,
     addRequestToPromise,
-    getRequestsForPromise
+    getRequestsForPromise,
+    getRequestsByTitleId
 
 } from "../controller/authcontroller.js"
 import { verifytoken } from "../middleware/verifyToken.js"
@@ -35,7 +36,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
 
  router.get('/submit-request', findPromiseWithId);
  router.get('/getRequests' , getRequestsForPromise)
-
+ router.get('/getRequestsByTitleId', getRequestsByTitleId);
 
 // more controllers below
 
