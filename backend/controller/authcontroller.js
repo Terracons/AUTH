@@ -484,6 +484,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 };
 
 
+
 export const updatePromiseRequest = async (userId, promiseId, newRequestingFor, newGiftItem, newMoneyPrice) => {
     try {
         // Find the user by their ID
@@ -589,7 +590,7 @@ export const getUserRequests =   async (req, res) => {
 
 
 
-  export const getPromisesWithRequests = async (req, res) => {
+export const getPromisesWithRequests = async (req, res) => {
     const { username } = req.params; // Get the username from the route parameters
 
     if (!username) {
