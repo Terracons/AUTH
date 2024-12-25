@@ -11,10 +11,8 @@ import {
     updatePromise,  
     deletePromise, 
     getPromiseDetails,
-    updatePromiseWithGiftOrMoney,
     findPromiseWithId,
     getUserRequests,
-    updatePromiseRequest,
     getPromisesWithRequests,
     addRequestToPromise
 
@@ -35,7 +33,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.delete('/deletePromise', deletePromise);
  router.get('/user/:id/promises', getPromiseDetails);
  router.put("/addRequest", addRequestToPromise);
- router.put("/updatePromiseRequest", updatePromiseRequest);
+//  router.put("/updatePromiseRequest", updatePromiseRequest);
  router.get('/submit-request', findPromiseWithId);
  router.get('/user/:username/requests', getUserRequests);
  router.get('/promises/:username', getPromisesWithRequests); // Username is passed as a route parameter
