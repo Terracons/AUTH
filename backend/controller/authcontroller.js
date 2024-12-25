@@ -397,7 +397,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 
     try {
         // Find the user by their username (assuming username is unique)
-        const user = await User.findById(username);
+        const user = await User.findById(username); // Keep your original user lookup
 
         if (!user) {
             return res.status(404).json({
@@ -418,7 +418,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
 
         // Prepare the new request details
         const newRequest = {
-            requestingFor: requestingFor,
+            requestingFor, // 'gift' or 'money'
             timestamp: new Date(),
         };
 
@@ -430,7 +430,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
                 });
             }
 
-            // Add the new gift item to the request
+            // Add the gift item to the request
             newRequest.giftItem = giftItem;
         } else if (requestingFor === 'money') {
             if (typeof money?.price !== 'number') {
@@ -449,15 +449,15 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
             });
         }
 
-        // Add the new request to the promiseTitle request array
-        if (!promise.requests) {
-            promise.requests = []; // Initialize if no requests exist yet
+        // Push the new request into the requestingFor array
+        promise.requestingFor.push(requestingFor);  // Push the type of request ('gift' or 'money')
+
+        // Now add the giftItem or money object to the appropriate place in the promise structure
+        if (requestingFor === 'gift') {
+            promise.giftItem = giftItem;  // Add gift details
+        } else if (requestingFor === 'money') {
+            promise.money = money;  // Add money details
         }
-
-        promise.requests.push(newRequest);  // Append new request (gift or money) to the existing ones
-
-        // Mark the requests field as modified to ensure it is saved properly
-        promise.markModified('requests');
 
         // Save the user document with the updated promise
         await user.save();
@@ -482,6 +482,7 @@ export const updatePromiseWithGiftOrMoney = async (req, res) => {
         });
     }
 };
+
 
 
 export const updatePromiseRequest = async (userId, promiseId, newRequestingFor, newGiftItem, newMoneyPrice) => {
