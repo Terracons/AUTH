@@ -464,7 +464,6 @@ export const addRequestToPromise = async (req, res) => {
   };
   
 
-
   export const getRequestsForPromise = async (req, res) => {
     const { userId, promiseTitleId } = req.body; // Extract userId and promiseTitleId from the request body
   
@@ -475,8 +474,8 @@ export const addRequestToPromise = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Find the specific promiseTitle by its ID
-      const promiseTitle = user.promiseTitle.id(promiseTitleId);
+      // Find the specific promiseTitle by its ID (ensure promiseTitles is an array)
+      const promiseTitle = user.promiseTitles.find(pt => pt._id.toString() === promiseTitleId);
       if (!promiseTitle) {
         return res.status(404).json({ message: 'Promise title not found' });
       }

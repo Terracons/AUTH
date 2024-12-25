@@ -34,7 +34,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.put("/addRequest", addRequestToPromise);
 
  router.get('/submit-request', findPromiseWithId);
- router.get('/getRequests' , getRequestsForPromise)
+ router.post('/getRequests' , getRequestsForPromise)
 
 
 // more controllers below
