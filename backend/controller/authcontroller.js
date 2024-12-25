@@ -406,13 +406,13 @@ export const addRequestToPromise = async (req, res) => {
             return res.status(400).json({ message: 'Invalid request type. Must be "money" or "url"' });
         }
 
-        if (requestType === 'money' ) {
-            return res.status(400).json({ message: 'For money requests, the value must be a number' });
-        }
+        // if (requestType === 'money' ) {
+        //     return res.status(400).json({ message: 'For money requests, the value must be a number' });
+        // }
 
-        if (requestType === 'url' ) {
-            return res.status(400).json({ message: 'For URL requests, the value must be a string' });
-        }
+        // if (requestType === 'url' ) {
+        //     return res.status(400).json({ message: 'For URL requests, the value must be a string' });
+        // }
 
         // Add the new request to the promiseTitle's requests array
         promiseTitle.requests.push({
