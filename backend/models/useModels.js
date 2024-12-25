@@ -44,18 +44,6 @@ const userSchema = new mongoose.Schema({
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
         title: { type: String, required: false },
         timestamp: { type: Date, default: Date.now },
-
-        requestingFor: [{
-            type: String, 
-            enum: ['gift', 'money'], 
-            required: false
-        }],
-        giftItem: {
-            url: { type: String, required: function() { return this.requestingFor === 'gift'; } }
-        },
-        money: {
-            price: { type: Number, required: function() { return this.requestingFor === 'money'; } }
-        },
     }],
     
     promiseDescription: [{
