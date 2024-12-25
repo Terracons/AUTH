@@ -385,143 +385,52 @@ export const getPromiseDetails = async (req, res) => {
 };
 
 
-export const updatePromiseWithGiftOrMoney = async (req, res) => {   
-    const { promiseId, requestingFor, giftItem, money, username } = req.body;
-
-    if (!promiseId || !requestingFor || !username) {
-        return res.status(400).json({
-            success: false,
-            message: "Promise ID, requestingFor type, and user ID are required."
-        });
-    }
+export const addRequestToPromise = async (req, res) => {
+    const { userId, promiseTitleId, requestType, requestValue } = req.body;
 
     try {
-        // Find the user by their username (assuming username is unique)
-        const user = await User.findById(username); // Keep your original user lookup
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found."
-            });
-        }
-
-        // Find the promise by promiseId within the user's promises
-        const promise = user.promiseTitle.id(promiseId); // Using .id() to find the promise by its _id
-
-        if (!promise) {
-            return res.status(404).json({
-                success: false,
-                message: "Promise not found."
-            });
-        }
-
-        // Prepare the new request details
-        const newRequest = {
-            requestingFor, // 'gift' or 'money'
-            timestamp: new Date(),
-        };
-
-        if (requestingFor === 'gift') {
-            if (!giftItem || !giftItem.url) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Gift URL is required for gift requests."
-                });
-            }
-
-            // Add the gift item to the request
-            newRequest.giftItem = giftItem;
-        } else if (requestingFor === 'money') {
-            if (typeof money?.price !== 'number') {
-                return res.status(400).json({
-                    success: false,
-                    message: "Price is required for money requests and must be a number."
-                });
-            }
-
-            // Add the money price to the request
-            newRequest.money = money;
-        } else {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid requestingFor value. It should be either 'gift' or 'money'."
-            });
-        }
-
-        // Push the new request into the requestingFor array
-        promise.requestingFor.push(requestingFor);  // Push the type of request ('gift' or 'money')
-
-        // Now add the giftItem or money object to the appropriate place in the promise structure
-        if (requestingFor === 'gift') {
-            promise.giftItem = giftItem;  // Add gift details
-        } else if (requestingFor === 'money') {
-            promise.money = money;  // Add money details
-        }
-
-        // Save the user document with the updated promise
-        await user.save();
-
-        res.status(200).json({
-            success: true,
-            message: "New request added successfully to the promise.",
-            user: user.toObject({
-                versionKey: false,
-                transform: (doc, ret) => {
-                    ret.password = undefined; // Remove password from the response
-                    return ret;
-                },
-            }),
-        });
-
-    } catch (error) {
-        console.error("Error adding new request to promise:", error.stack);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error. Could not add request.",
-        });
-    }
-};
-
-
-
-export const updatePromiseRequest = async (userId, promiseId, newRequestingFor, newGiftItem, newMoneyPrice) => {
-    try {
-        // Find the user by their ID
+        // Find the user by userId
         const user = await User.findById(userId);
-        
         if (!user) {
-            throw new Error('User not found');
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // Find the promise by its ID within the user's promiseTitle array
-        const promise = user.promiseTitle.id(promiseId);
-        
-        if (!promise) {
-            throw new Error('Promise not found');
+        // Find the specific promiseTitle by its ID
+        const promiseTitle = user.promiseTitle.id(promiseTitleId);
+        if (!promiseTitle) {
+            return res.status(404).json({ message: 'Promise title not found' });
         }
 
-        // Update the 'requestingFor' field
-        promise.requestingFor = [newRequestingFor]; // Assuming 'newRequestingFor' is 'gift' or 'money'
-
-        // Conditionally update the giftItem or money field based on 'requestingFor'
-        if (newRequestingFor === 'gift') {
-            promise.giftItem = { url: newGiftItem }; // Ensure 'newGiftItem' is a valid URL string
-            promise.money = {}; // Clear the money field if it's a gift
-        } else if (newRequestingFor === 'money') {
-            promise.money = { price: newMoneyPrice }; // Ensure 'newMoneyPrice' is a valid number
-            promise.giftItem = {}; // Clear the giftItem field if it's money
+        // Validate requestType and requestValue
+        if (!['money', 'url'].includes(requestType)) {
+            return res.status(400).json({ message: 'Invalid request type. Must be "money" or "url"' });
         }
+
+        if (requestType === 'money' && typeof requestValue !== 'number') {
+            return res.status(400).json({ message: 'For money requests, the value must be a number' });
+        }
+
+        if (requestType === 'url' && typeof requestValue !== 'string') {
+            return res.status(400).json({ message: 'For URL requests, the value must be a string' });
+        }
+
+        // Add the new request to the promiseTitle's requests array
+        promiseTitle.requests.push({
+            requestType,
+            requestValue,
+            timestamp: new Date()
+        });
 
         // Save the updated user document
         await user.save();
 
-        return user;
+        return res.status(201).json({ message: 'Request added successfully', user });
     } catch (error) {
-        console.error('Error updating promise request:', error);
-        throw error;
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
  
   export const findPromiseWithId =  async (req, res) => {

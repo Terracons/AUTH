@@ -42,8 +42,19 @@ const userSchema = new mongoose.Schema({
 
     promiseTitle: [{
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-        title: { type: String, required: false },
-        timestamp: { type: Date, default: Date.now },
+        title: { type: String, required: true },
+        requests: [{
+            requestType: { 
+                type: String, 
+                enum: ['money', 'url'], // "money" or "url"
+                required: true 
+            },
+            requestValue: { 
+                type: mongoose.Schema.Types.Mixed, // Can be a number for money or a string for URL
+                required: true 
+            }
+        }],
+        timestamp: { type: Date, default: Date.now }
     }],
     
     promiseDescription: [{

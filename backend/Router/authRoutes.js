@@ -15,7 +15,8 @@ import {
     findPromiseWithId,
     getUserRequests,
     updatePromiseRequest,
-    getPromisesWithRequests
+    getPromisesWithRequests,
+    addRequestToPromise
 
 } from "../controller/authcontroller.js"
 import { verifytoken } from "../middleware/verifyToken.js"
@@ -33,7 +34,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.put("/update-promise", updatePromise);
  router.delete('/deletePromise', deletePromise);
  router.get('/user/:id/promises', getPromiseDetails);
- router.put("/update-promise-gift-money", updatePromiseWithGiftOrMoney);
+ router.put("/addRequest", addRequestToPromise);
  router.put("/updatePromiseRequest", updatePromiseRequest);
  router.get('/submit-request', findPromiseWithId);
  router.get('/user/:username/requests', getUserRequests);
