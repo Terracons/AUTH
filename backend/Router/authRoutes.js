@@ -12,9 +12,8 @@ import {
     deletePromise, 
     getPromiseDetails,
     findPromiseWithId,
-    getUserRequests,
-    getPromisesWithRequests,
-    addRequestToPromise
+    addRequestToPromise,
+    getRequestsForPromiseTitle
 
 } from "../controller/authcontroller.js"
 import { verifytoken } from "../middleware/verifyToken.js"
@@ -32,11 +31,8 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.put("/update-promise", updatePromise);
  router.delete('/deletePromise', deletePromise);
  router.get('/user/:id/promises', getPromiseDetails);
- router.put("/addRequest", addRequestToPromise);
-//  router.put("/updatePromiseRequest", updatePromiseRequest);
  router.get('/submit-request', findPromiseWithId);
- router.get('/user/:username/requests', getUserRequests);
- router.get('/promises/:username', getPromisesWithRequests); // Username is passed as a route parameter
+ router.get('getRequests' , getRequestsForPromiseTitle)
 
 
 // more controllers below

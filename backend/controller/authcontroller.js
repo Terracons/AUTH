@@ -464,107 +464,29 @@ export const addRequestToPromise = async (req, res) => {
   };
   
 
- 
-  // Controller function to get user promises
-export const getUserRequests =   async (req, res) => {
-    try {
-      const { username } = req.params;
-  
-      // Find the user by username and select only the 'promiseTitle' field
-      const user = await User.findOne({ username }).select('promiseTitle');
-  
-      // If no user is found, return an error message
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Filter the promiseTitle array to include only those where 'requestingFor' is set
-      const requestingForPromises = user.promiseTitle.filter(promise => promise.requestingFor);
-  
-      // Map over the filtered promises to return the necessary details (money or gift)
-      const formattedPromises = requestingForPromises.map(promise => {
-        if (promise.requestingFor === 'money') {
-          return {
-            requestingFor: promise.requestingFor,
-            price: promise.money?.price, // Only include the price if it's a money request
-          };
-        } else if (promise.requestingFor === 'gift') {
-          return {
-            requestingFor: promise.requestingFor,
-            giftItemUrl: promise.giftItem?.url, // Only include the URL if it's a gift request
-          };
-        }
-        return null; // Shouldn't happen but just a safety check
-      }).filter(Boolean); // Remove any null values
-  
-      // Respond with the filtered promises
-      res.json(formattedPromises);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
-    }
-  };
 
-
-
-export const getPromisesWithRequests = async (req, res) => {
-    const { username } = req.params; // Get the username from the route parameters
-
-    if (!username) {
-        return res.status(400).json({
-            success: false,
-            message: "Username is required."
-        });
-    }
+export const getRequestsForPromiseTitle = async (req, res) => {
+    const { userId, promiseTitleId } = req.params;
 
     try {
-        // Find the user by username (assuming username is unique)
-        const user = await User.findOne({ username });
-
+        // Find the user by userId
+        const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found."
-            });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // Iterate over each promise and format the response
-        const formattedPromises = user.promiseTitle.map(promise => {
-            const formattedRequests = promise.requests.map(request => {
-                if (request.requestingFor === 'gift') {
-                    return {
-                        type: 'Gift',
-                        url: request.giftItem?.url || 'No gift URL available',
-                        timestamp: request.timestamp
-                    };
-                } else if (request.requestingFor === 'money') {
-                    return {
-                        type: 'Money',
-                        price: request.money?.price || 'No price available',
-                        timestamp: request.timestamp
-                    };
-                }
-                return {}; // Default empty object if something is wrong
-            });
+        // Find the specific promiseTitle by its ID
+        const promiseTitle = user.promiseTitle.id(promiseTitleId);
+        if (!promiseTitle) {
+            return res.status(404).json({ message: 'Promise title not found' });
+        }
 
-            return {
-                promiseId: promise._id,
-                title: promise.title,
-                timestamp: promise.timestamp,
-                requests: formattedRequests
-            };
-        });
-
-        res.status(200).json({
-            success: true,
-            promises: formattedPromises
-        });
+        // Return the requests associated with the promiseTitle
+        return res.status(200).json({ requests: promiseTitle.requests });
     } catch (error) {
-        console.error("Error fetching promises and requests:", error.stack);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error. Could not fetch promises."
-        });
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
