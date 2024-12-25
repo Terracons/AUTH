@@ -465,28 +465,31 @@ export const addRequestToPromise = async (req, res) => {
   
 
 
-export const getRequestsForPromiseTitle = async (req, res) => {
-    const { userId, promiseTitleId } = req.params;
-
+  export const getRequestsForPromise = async (req, res) => {
+    const { userId, promiseTitleId } = req.body; // Extract userId and promiseTitleId from the request body
+  
     try {
-        // Find the user by userId
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Find the specific promiseTitle by its ID
-        const promiseTitle = user.promiseTitle.id(promiseTitleId);
-        if (!promiseTitle) {
-            return res.status(404).json({ message: 'Promise title not found' });
-        }
-
-        // Return the requests associated with the promiseTitle
-        return res.status(200).json({ requests: promiseTitle.requests });
+      // Find the user by userId
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Find the specific promiseTitle by its ID
+      const promiseTitle = user.promiseTitle.id(promiseTitleId);
+      if (!promiseTitle) {
+        return res.status(404).json({ message: 'Promise title not found' });
+      }
+  
+      // Return all the requests associated with this promiseTitle
+      return res.status(200).json({
+        message: 'Requests fetched successfully',
+        requests: promiseTitle.requests, // Assuming 'requests' is an array in the 'promiseTitle'
+      });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+      console.error(error);
+      return res.status(500).json({ message: 'Internal server error' });
     }
-};
-
+  };
+  
 
