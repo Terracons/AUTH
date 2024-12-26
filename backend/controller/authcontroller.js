@@ -512,3 +512,49 @@ export const sharePromise = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+
+
+
+export const generateShareLink = async (req, res) => {
+    try {
+        const { promiseTitleId } = req.body;  // Promise ID from the request
+
+        // Check if the promise exists
+        const promise = await Promise.findById(promiseTitleId);
+        if (!promise) {
+            return res.status(404).json({ message: 'Promise not found' });
+        }
+
+        // Generate a unique token using a random string
+        const token = crypto.randomBytes(16).toString('hex');
+
+        // Save the token to the promise (you could also save it in a separate collection)
+        promise.shareToken = token;
+        await promise.save();
+
+        // Generate the shareable link
+        const shareLink = `${process.env.FRONTEND_URL}/shared/${token}`;
+
+        return res.status(200).json({ shareLink });
+    } catch (err) {
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Function to retrieve a shared promise using the token
+export const getSharedPromise = async (req, res) => {
+    try {
+        const { token } = req.params;  // Token from the URL parameter
+
+        // Find the promise with the given token
+        const promise = await Promise.findOne({ shareToken: token });
+        if (!promise) {
+            return res.status(404).json({ message: 'Promise not found' });
+        }
+
+        // Return the promise details
+        return res.status(200).json({ promise });
+    } catch (err) {
+        return res.status(500).json({ message: 'Server error' });
+    }
+};

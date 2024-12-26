@@ -44,18 +44,22 @@ const userSchema = new mongoose.Schema({
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
         title: { type: String, required: false },
         requests: [{
+            _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Add an _id to each request
             requestType: { 
                 type: String, 
-                enum: ['money', 'url'], // "money" or "url"
+                enum: ['money', 'url'], 
                 required: false 
             },
             requestValue: { 
-                type: mongoose.Schema.Types.Mixed, // Can be a number for money or a string for URL
+                type: mongoose.Schema.Types.Mixed, 
                 required: false 
-            }
+            },
+            paid: { type: Boolean, default: false }, // Payment status
         }],
         timestamp: { type: Date, default: Date.now }
     }],
+    
+    
     
     promiseDescription: [{
         description: { type: String, required: false },
