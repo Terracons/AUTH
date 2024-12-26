@@ -533,23 +533,36 @@ export const sharePromise = async (req, res) => {
 };
 
 
-// Sample route to get the promise details
-export const getRequestDetails =  async (req, res) => {
-    try {
-        const { promiseTitleId } = req.params;
+export const getPromiseDetailsById = async (req, res) => {
+    const { promiseTitleId } = req.params;
 
-        // Fetch promise details from database
-        const promise = await Promise.findById(promiseTitleId);
-        if (!promise) {
-            return res.status(404).json({ message: 'Promise not found' });
+    try {
+        const user = await User.findOne({ 'promiseTitle._id': promiseTitleId });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Promise not found.' });
         }
 
-        // Fetch requests associated with the promise
-        const requests = await Request.find({ promiseTitleId });
+        // Find the specific promise using the ID within the user's promises
+        const promise = user.promiseTitle.id(promiseTitleId);
 
-        res.json({ promise, requests });
-    } catch (err) {
-        res.status(500).json({ message: 'Error fetching promise details', error: err.message });
+        if (!promise) {
+            return res.status(404).json({ success: false, message: 'Promise not found.' });
+        }
+
+        // Return the promise details
+        return res.status(200).json({
+            success: true,
+            promise: {
+                title: promise.title,
+                description: promise.description,
+                requests: promise.requests,
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching promise details:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
+
 
