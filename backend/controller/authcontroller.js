@@ -532,3 +532,24 @@ export const sharePromise = async (req, res) => {
     }
 };
 
+
+// Sample route to get the promise details
+export const getRequestDetails =  async (req, res) => {
+    try {
+        const { promiseTitleId } = req.params;
+
+        // Fetch promise details from database
+        const promise = await Promise.findById(promiseTitleId);
+        if (!promise) {
+            return res.status(404).json({ message: 'Promise not found' });
+        }
+
+        // Fetch requests associated with the promise
+        const requests = await Request.find({ promiseTitleId });
+
+        res.json({ promise, requests });
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching promise details', error: err.message });
+    }
+};
+

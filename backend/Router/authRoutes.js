@@ -15,6 +15,7 @@ import {
     addRequestToPromise,
     getRequestsOfPromise,
     sharePromise,
+    getRequestDetails,
    
 
 } from "../controller/authcontroller.js"
@@ -37,6 +38,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.get('/submit-request', findPromiseWithId);
  router.post ('/get-promise-requests', getRequestsOfPromise);
  router.post('/sharePromise/:promiseTitleId', sharePromise);
+ router.get('/get-promise-details/:promiseTitleId', getRequestDetails)
 
  
 
