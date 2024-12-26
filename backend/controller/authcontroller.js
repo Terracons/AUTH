@@ -520,8 +520,11 @@ export const sharePromise = async (req, res) => {
 export const generateShareLink = async (req, res) => {
     try {
         const { promiseTitleId } = req.body;  // Promise ID from the request
-        // Define frontend URL, checking the environment variable first
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174'; // Default fallback URL
+
+        // Debugging: Log the promiseTitleId and frontendUrl to ensure they are valid
+        console.log("Promise ID: ", promiseTitleId);
+        console.log("Frontend URL: ", frontendUrl);
 
         // Check if the promise exists
         const promise = await Promise.findById(promiseTitleId);
@@ -536,15 +539,16 @@ export const generateShareLink = async (req, res) => {
         promise.shareToken = token;
         await promise.save();
 
-        // Generate the shareable link using the correctly defined frontend URL
+        // Generate the shareable link
         const shareLink = `${frontendUrl}/shared/${token}`;
 
         return res.status(200).json({ shareLink });
     } catch (err) {
-        return res.status(500).json({ message: 'Server error' });
+        // Log the actual error for debugging
+        console.error(err);
+        return res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
-
 // Function to retrieve a shared promise using the token
 export const getSharedPromise = async (req, res) => {
     try {
