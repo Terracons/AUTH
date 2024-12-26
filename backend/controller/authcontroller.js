@@ -489,3 +489,26 @@ export const getRequestsOfPromise =  async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
+export const sharePromise = async (req, res) => {
+    const { promiseTitleId } = req.params;
+
+    try {
+        const user = await User.findOne({ "promiseTitle._id": promiseTitleId });
+
+        if (!user) {
+            return res.status(404).json({ message: "Promise not found." });
+        }
+
+        const promise = user.promiseTitle.id(promiseTitleId);
+
+        if (!promise) {
+            return res.status(404).json({ message: "Promise not found." });
+        }
+
+        return res.status(200).json(promise);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
