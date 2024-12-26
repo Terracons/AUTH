@@ -56,11 +56,10 @@ const userSchema = new mongoose.Schema({
             },
             paid: { type: Boolean, default: false }, // Payment status
         }],
-        timestamp: { type: Date, default: Date.now }
+        timestamp: { type: Date, default: Date.now },
+        shareToken: { type: String, required: false }  // Add the shareToken field here
     }],
-    
-    
-    
+
     promiseDescription: [{
         description: { type: String, required: false },
         timestamp: { type: Date, default: Date.now }

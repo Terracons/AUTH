@@ -3,7 +3,9 @@ import bycrptjs from "bcryptjs"
 import { generateverificationcode,generateTokenSetCookies  } from "../utlitis/utilitis.js";
 import { sendVerificationEmail, sendWelcomeEmail } from "../mailTrap/emails.js";
 import crypto from "crypto"
-import { timeStamp } from "console";
+
+
+
 export const signup = async (req, res)=>{
     const{email, password, firstName , lastName, username, phone} = req.body;
     try {
@@ -518,6 +520,8 @@ export const sharePromise = async (req, res) => {
 export const generateShareLink = async (req, res) => {
     try {
         const { promiseTitleId } = req.body;  // Promise ID from the request
+        // Define frontend URL, checking the environment variable first
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174'; // Default fallback URL
 
         // Check if the promise exists
         const promise = await Promise.findById(promiseTitleId);
@@ -532,8 +536,8 @@ export const generateShareLink = async (req, res) => {
         promise.shareToken = token;
         await promise.save();
 
-        // Generate the shareable link
-        const shareLink = `${process.env.FRONTEND_URL}/shared/${token}`;
+        // Generate the shareable link using the correctly defined frontend URL
+        const shareLink = `${frontendUrl}/shared/${token}`;
 
         return res.status(200).json({ shareLink });
     } catch (err) {
