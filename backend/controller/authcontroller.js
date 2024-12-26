@@ -3,6 +3,7 @@ import bycrptjs from "bcryptjs"
 import { generateverificationcode,generateTokenSetCookies  } from "../utlitis/utilitis.js";
 import { sendVerificationEmail, sendWelcomeEmail } from "../mailTrap/emails.js";
 import crypto from "crypto"
+import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share tokens
 
 
 
