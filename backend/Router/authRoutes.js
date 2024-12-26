@@ -36,7 +36,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.put("/addRequest", addRequestToPromise);
  router.get('/submit-request', findPromiseWithId);
  router.post ('/get-promise-requests', getRequestsOfPromise);
- router.get ('/promise/share/:promiseTitleId', sharePromise)
+ router.post('/sharePromise/:promiseTitleId', sharePromise);
 
  
 
