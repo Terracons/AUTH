@@ -464,63 +464,28 @@ export const addRequestToPromise = async (req, res) => {
   };
   
 
-  export const getRequestsForPromise = async (req, res) => {
-    const { userId, promiseTitleId } = req.query; // Get the userId and promiseTitleId from query parameters
-  
+export const getRequestsOfPromise =  async (req, res) => {
     try {
-      // Find the user by userId
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Find the specific promiseTitle by its ID (assuming promiseTitles is an array)
-      const promiseTitle = user.promiseTitles.find(pt => pt._id.toString() === promiseTitleId);
-      if (!promiseTitle) {
-        return res.status(404).json({ message: 'Promise title not found' });
-      }
-  
-      // Return all the requests associated with this promiseTitle
-      return res.status(200).json({
-        message: 'Requests fetched successfully',
-        requests: promiseTitle.requests, // Assuming 'requests' is an array in the 'promiseTitle'
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
-  };
-  
+        const { userId, promiseTitleId } = req.body;
 
-  export const getRequestsByTitleId = async (req, res) => {
-    const { promiseTitleId } = req.query; // Get the promiseTitleId from query params
-
-    try {
-        // Convert the promiseTitleId to a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(promiseTitleId)) {
-            return res.status(400).json({ message: 'Invalid promiseTitle ID' });
-        }
-
-        // Find the user who has the specific promiseTitleId
-        const user = await User.findOne({
-            'promiseTitle._id': mongoose.Types.ObjectId(promiseTitleId) // Search for the promiseTitle by its _id
-        }, {
-            'promiseTitle.$': 1, // Use the positional operator to return only the matching promiseTitle
-            _id: 0 // Exclude the _id field from the response
-        });
+        // Find the user by ID
+        const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found or no matching promise title' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        // Extract the specific promiseTitle from the response
-        const promiseTitle = user.promiseTitle[0]; // We expect only one matching promiseTitle based on the _id
+        // Find the specific promise by title ID
+        const promise = user.promiseTitle.id(promiseTitleId);
 
-        // Return the requests related to the specific promiseTitle
-        res.json(promiseTitle.requests);
+        if (!promise) {
+            return res.status(404).json({ message: 'Promise not found' });
+        }
 
+        // Return the requests from the selected promise
+        return res.status(200).json(promise.requests);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error' });
     }
 };
