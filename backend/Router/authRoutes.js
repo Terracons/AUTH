@@ -15,7 +15,6 @@ import {
     addRequestToPromise,
     getRequestsOfPromise,
     sharePromise,
-    getPromiseDetailsById,
    
    
 
