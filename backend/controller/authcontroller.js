@@ -567,36 +567,39 @@ export const getPromiseDetailsById = async (req, res) => {
 
 
 export const deleteRequest = async (req, res) => {
-    try {
-        const { userId, requestId, promiseId } = req.body;
+    const { userId, requestId, promiseId } = req.body;
 
-        // Find the user and the promise title
+    try {
+        // Find the user by userId
         const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: 'User not found' });
         }
 
+        // Find the promiseTitle by promiseId
         const promiseTitle = user.promiseTitle.id(promiseId);
 
         if (!promiseTitle) {
-            return res.status(404).json({ message: "Promise title not found" });
+            return res.status(404).json({ message: 'Promise not found' });
         }
 
-        // Find and remove the request
-        const requestToDelete = promiseTitle.requests.id(requestId);
+        // Find the request by requestId within the promiseTitle's requests array
+        const requestIndex = promiseTitle.requests.findIndex(req => req._id.toString() === requestId);
 
-        if (!requestToDelete) {
-            return res.status(404).json({ message: "Request not found" });
+        if (requestIndex === -1) {
+            return res.status(404).json({ message: 'Request not found' });
         }
 
-        requestToDelete.remove(); // Remove the request from the array
-        await user.save(); // Save the updated user
+        // Remove the request
+        promiseTitle.requests.splice(requestIndex, 1);
 
-        res.status(200).json({ message: "Request deleted successfully" });
+        // Save the user document after deleting the request
+        await user.save();
+
+        return res.status(200).json({ message: 'Request deleted successfully' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Error deleting request" });
+        return res.status(500).json({ message: 'Server error while deleting request' });
     }
 };
-
