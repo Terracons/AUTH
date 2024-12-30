@@ -568,24 +568,35 @@ export const getPromiseDetailsById = async (req, res) => {
 
 export const deleteRequest = async (req, res) => {
     try {
-        const { requestId } = req.body;
+        const { userId, requestId, promiseId } = req.body;
 
-        // Validate if the requestId exists
-        if (!requestId) {
-            return res.status(400).json({ message: 'Request ID is required' });
+        // Find the user and the promise title
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
         }
 
-        // Find and delete the request by its ID
-        const request = await Request.findByIdAndDelete(requestId);
+        const promiseTitle = user.promiseTitle.id(promiseId);
 
-        if (!request) {
-            return res.status(404).json({ message: 'Request not found' });
+        if (!promiseTitle) {
+            return res.status(404).json({ message: "Promise title not found" });
         }
 
-        // Return success response
-        return res.status(200).json({ success: true, message: 'Request deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting request:', error);
-        return res.status(500).json({ message: 'Error deleting request' , error});
+        // Find and remove the request
+        const requestToDelete = promiseTitle.requests.id(requestId);
+
+        if (!requestToDelete) {
+            return res.status(404).json({ message: "Request not found" });
+        }
+
+        requestToDelete.remove(); // Remove the request from the array
+        await user.save(); // Save the updated user
+
+        res.status(200).json({ message: "Request deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error deleting request" });
     }
 };
+
