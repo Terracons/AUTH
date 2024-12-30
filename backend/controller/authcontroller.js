@@ -586,6 +586,6 @@ export const deleteRequest = async (req, res) => {
         return res.status(200).json({ success: true, message: 'Request deleted successfully' });
     } catch (error) {
         console.error('Error deleting request:', error);
-        return res.status(500).json({ message: 'Error deleting request' });
+        return res.status(500).json({ message: 'Error deleting request' , error});
     }
 };
