@@ -16,6 +16,7 @@ import {
     getRequestsOfPromise,
     sharePromise,
     getPromiseDetailsById,
+    deleteRequest,
    
    
 
@@ -40,6 +41,8 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.post ('/get-promise-requests', getRequestsOfPromise);
  router.post('/sharePromise/:promiseTitleId', sharePromise);
  router.get('/get-promise-details/:promiseTitleId', getPromiseDetailsById);
+ router.post('/delete-request', deleteRequest);  
+
 
  
 

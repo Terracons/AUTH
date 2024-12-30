@@ -566,3 +566,26 @@ export const getPromiseDetailsById = async (req, res) => {
 };
 
 
+export const deleteRequest = async (req, res) => {
+    try {
+        const { requestId } = req.body;
+
+        // Validate if the requestId exists
+        if (!requestId) {
+            return res.status(400).json({ message: 'Request ID is required' });
+        }
+
+        // Find and delete the request by its ID
+        const request = await Request.findByIdAndDelete(requestId);
+
+        if (!request) {
+            return res.status(404).json({ message: 'Request not found' });
+        }
+
+        // Return success response
+        return res.status(200).json({ success: true, message: 'Request deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting request:', error);
+        return res.status(500).json({ message: 'Error deleting request' });
+    }
+};
