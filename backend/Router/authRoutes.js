@@ -18,6 +18,7 @@ import {
     getPromiseDetailsById,
     deleteRequest,
     getNotifications,
+    analytics,
    
    
 
@@ -44,6 +45,8 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.get('/get-promise-details/:promiseTitleId', getPromiseDetailsById);
  router.post('/delete-request', deleteRequest);  
  router.get('/notifications/:userId', getNotifications);
+ router.post('/analytics/:promiseId', analytics);  
+
 
 
 

@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share 
 
 
 
+
+
 export const signup = async (req, res)=>{
     const{email, password, firstName , lastName, username, phone} = req.body;
     try {
@@ -597,6 +599,26 @@ const addNotification = async (userId, message) => {
 };
 
 
+const getDeviceType = (userAgent) => {
+    const parser = new UAParser(userAgent);
+    const device = parser.getDevice();
+    const os = parser.getOS();
+
+    // Classify device based on User-Agent information
+    if (device.type === 'mobile' || device.type === 'tablet') {
+        if (os.name === 'iOS') {
+            return 'ios';
+        } else if (os.name === 'Android') {
+            return 'android';
+        } else if (device.type === 'tablet') {
+            return 'tablet';
+        }
+    }
+
+    return 'desktop';  // Default to desktop for other cases
+};
+
+
 export const getNotifications = async (req, res) => {
     const { userId } = req.params;
 
@@ -616,3 +638,76 @@ export const getNotifications = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+
+const updateClicks = async (userId, promiseId, userAgent) => {
+    const deviceType = getDeviceType(userAgent);  // Get device type from user agent
+
+    const user = await User.findOne({ _id: userId });
+    const promise = user.promiseTitle.id(promiseId);
+
+    if (promise) {
+        if (promise.clicks[deviceType] !== undefined) {
+            promise.clicks[deviceType]++;
+            await user.save();
+        } else {
+            throw new Error('Invalid device type');
+        }
+    } else {
+        throw new Error('Promise not found');
+    }
+};
+
+const incrementShares = async (userId, promiseId) => {
+    const user = await User.findOne({ _id: userId });
+    const promise = user.promiseTitle.id(promiseId);
+
+    if (promise) {
+        promise.shares++;
+        await user.save();
+    } else {
+        throw new Error('Promise not found');
+    }
+};
+
+
+const getPromiseShares = async (userId, promiseId) => {
+    const user = await User.findOne({ _id: userId });
+    const promise = user.promiseTitle.id(promiseId);
+
+    if (promise) {
+        return promise.shares;
+    } else {
+        throw new Error('Promise not found');
+    }
+};
+
+
+export const analytics = (req, res) => {
+    const userId = req.user._id;  // Assuming user info is available in the request (authentication middleware)
+    const promiseId = req.params.promiseId;  // Get the promiseId from the URL params
+    const userAgent = req.headers['user-agent'];  // Get the User-Agent from the request headers
+
+    // Tracking the click event
+    updateClicks(userId, promiseId, userAgent)
+        .then(() => {
+            // Optionally, track share events if the user has shared the promise (you can add this logic here if applicable)
+            // Assuming that we pass a flag or detect share interaction separately, e.g., from front-end triggers
+
+            incrementShares(promiseId)
+                .then(() => {
+                    // Get the current number of shares for this promise
+                    getPromiseShares(promiseId)
+                        .then(shares => {
+                            res.send({
+                                message: 'Click and share recorded successfully',
+                                shares: shares,  // Include the updated number of shares in the response
+                            });
+                        })
+                        .catch(err => res.status(400).send('Error fetching share count: ' + err.message));
+                })
+                .catch(err => res.status(400).send('Error incrementing share count: ' + err.message));
+        })
+        .catch(err => res.status(400).send('Error recording click: ' + err.message));
+};
+

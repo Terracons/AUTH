@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
         _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
         title: { type: String, required: false },
         requests: [{
-            _id: { type: mongoose.Schema.Types.ObjectId, auto: true }, // Add an _id to each request
+            _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
             requestType: { 
                 type: String, 
                 enum: ['money', 'url'], 
@@ -57,7 +57,16 @@ const userSchema = new mongoose.Schema({
             paid: { type: Boolean, default: false }, // Payment status
         }],
         timestamp: { type: Date, default: Date.now },
-        shareToken: { type: String, required: false }  // Add the shareToken field here
+        shareToken: { type: String, required: false },  // Add the shareToken field here
+        clicks: {
+            desktop: { type: Number, default: 0 },
+            android: { type: Number, default: 0 },
+            ios: { type: Number, default: 0 },
+            tablet: { type: Number, default: 0 }
+        },
+        shares: { type: Number, default: 0 },
+        requestsCreated: { type: Number, default: 0 },
+        requestsDeleted: { type: Number, default: 0 }
     }],
 
     promiseDescription: [{
