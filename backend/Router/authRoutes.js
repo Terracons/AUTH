@@ -43,7 +43,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.post('/sharePromise/:promiseTitleId', sharePromise);
  router.get('/get-promise-details/:promiseTitleId', getPromiseDetailsById);
  router.post('/delete-request', deleteRequest);  
- router.get('/notifications', getNotifications);
+ router.get('/notifications/:userId', getNotifications);
 
 
 
