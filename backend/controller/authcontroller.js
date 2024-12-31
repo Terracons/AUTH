@@ -254,7 +254,7 @@ export const updatePromise = async (req, res) => {
             });
         }
 
-        
+        // Add the promise details to the user's profile
         user.promiseTitle.push({
             title: promiseTitle,
             timestamp: Date.now()
@@ -265,13 +265,15 @@ export const updatePromise = async (req, res) => {
             timestamp: Date.now()
         });
 
-       
+        // Save the updated user document
         await user.save();
+
+        // Add notification for promise creation
+        await addNotification(user._id, `New promise titled "${promiseTitle}" created.`);
 
         res.status(200).json({
             success: true,
             message: "Promise details updated successfully.",
-            data : user,
             user: user.toObject({
                 versionKey: false,
                 transform: (doc, ret) => {
@@ -392,36 +394,14 @@ export const addRequestToPromise = async (req, res) => {
     const { userId, promiseTitleId, requestType, requestValue } = req.body;
 
     try {
-        // Log the incoming request for debugging
-        console.log("Request body:", req.body);
-
-        // Find the user by userId
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Find the specific promiseTitle by its ID
         const promiseTitle = user.promiseTitle.id(promiseTitleId);
         if (!promiseTitle) {
             return res.status(404).json({ message: 'Promise title not found' });
-        }
-
-        // Validate requestType and requestValue
-        if (!['money', 'url'].includes(requestType)) {
-            return res.status(400).json({ message: 'Invalid request type. Must be "money" or "url"' });
-        }
-
-        if (requestType === 'money' && typeof requestValue !== 'number') {
-            return res.status(400).json({ message: 'For "money" request, the value must be a number' });
-        }
-
-        if (requestType === 'url' && typeof requestValue !== 'string') {
-            return res.status(400).json({ message: 'For "url" request, the value must be a string' });
-        }
-
-        if (requestType === 'url' && !/^https?:\/\/[^\s]+$/.test(requestValue)) {
-            return res.status(400).json({ message: 'Invalid URL format' });
         }
 
         // Add the new request to the promiseTitle's requests array
@@ -434,12 +414,16 @@ export const addRequestToPromise = async (req, res) => {
         // Save the updated user document
         await user.save();
 
+        // Add notification for request addition
+        await addNotification(user._id, `You added a new request (${requestType})  to your promise titled "${promiseTitle.title}".`);
+
         return res.status(201).json({ message: 'Request added successfully', user });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 
 
@@ -570,36 +554,65 @@ export const deleteRequest = async (req, res) => {
     const { userId, requestId, promiseId } = req.body;
 
     try {
-        // Find the user by userId
         const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Find the promiseTitle by promiseId
         const promiseTitle = user.promiseTitle.id(promiseId);
-
         if (!promiseTitle) {
             return res.status(404).json({ message: 'Promise not found' });
         }
 
-        // Find the request by requestId within the promiseTitle's requests array
         const requestIndex = promiseTitle.requests.findIndex(req => req._id.toString() === requestId);
-
         if (requestIndex === -1) {
             return res.status(404).json({ message: 'Request not found' });
         }
 
-        // Remove the request
         promiseTitle.requests.splice(requestIndex, 1);
 
-        // Save the user document after deleting the request
         await user.save();
+
+        // Add notification for request deletion
+        await addNotification(user._id, `Request has been deleted from your promise titled "${promiseTitle.title}".`);
 
         return res.status(200).json({ message: 'Request deleted successfully' });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Server error while deleting request' });
+    }
+};
+
+
+const addNotification = async (userId, message) => {
+    const user = await User.findById(userId);
+    if (user) {
+        user.notifications.push({
+            message,
+            timestamp: new Date()
+        });
+        await user.save();
+    }
+};
+
+
+export const getNotifications = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            notifications: user.notifications
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
