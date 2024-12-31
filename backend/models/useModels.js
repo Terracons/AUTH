@@ -63,6 +63,11 @@ const userSchema = new mongoose.Schema({
     promiseDescription: [{
         description: { type: String, required: false },
         timestamp: { type: Date, default: Date.now }
+    }],
+
+    notifications: [{
+        message: { type: String, required: false },
+        timestamp: { type: Date, default: Date.now }
     }]
 }, { timestamps: true });
 
