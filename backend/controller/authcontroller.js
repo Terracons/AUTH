@@ -349,33 +349,6 @@ export const deletePromise = async (req, res) => {
 };
 
 
-import jwt from 'jsonwebtoken';
-import User from '../models/User';  // Assuming you're using a User model
-
-// Middleware to verify the token
-const verifyToken = (req, res, next) => {
-    const token = req.cookies.token;  // Assuming the token is stored in cookies
-
-    if (!token) {
-        return res.status(401).json({
-            success: false,
-            message: "No token provided. Unauthorized access."
-        });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Decode the token using the secret
-        req.userId = decoded.userId;  // Attach the userId to the request object for later use
-        next();
-    } catch (error) {
-        return res.status(403).json({
-            success: false,
-            message: "Invalid token. Unauthorized access."
-        });
-    }
-};
-
-
 export const getPromiseDetails = async (req, res) => {
     const { userId } = req;  // The userId was added to the request by the verifyToken middleware
 
