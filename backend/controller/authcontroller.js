@@ -105,14 +105,14 @@ export const login= async (req, res)=> {
             return res.status(400).json({success:false, message:"invalid password"})
             
         }
-        token = generateTokenSetCookies(res, user._id)
+        const token = generateTokenSetCookies(res, user._id)
         user.lastlogin = Date.now()
         await user.save();
 
         res.status(200).json({
             success:true,
-            message:"Login request succesfull",
-            token : req.cookies.token,
+            message:"Login access Granted",
+            token : token,
             user:{
                 ...user._doc,
                 password:undefined,
