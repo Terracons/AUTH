@@ -111,7 +111,7 @@ export const login= async (req, res)=> {
 
         res.status(200).json({
             success:true,
-            message:"Login succesfull",
+            message:"Login request succesfull",
             token : req.cookies.token,
             user:{
                 ...user._doc,
