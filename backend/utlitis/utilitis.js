@@ -17,7 +17,7 @@ export const generateTokenSetCookies =(res, userId)=>{
         "token",token,{
             httponly:true,
             secure:process.env.NODE_ENV==="production",
-            sameSite:"None",
+            sameSite:"strict",
             maxAge: 7*24*60*60*1000,
         }
 
