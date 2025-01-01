@@ -108,7 +108,7 @@ export const WELCOME_EMAIL_TEMPLATE = `
   <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
     <p>Hello <strong>{firstName}</strong>,</p>
     <p>Welcome to <strong>Git Pixel</strong>! We're thrilled to have you on board.</p>
-    <p>Git Pixel is here to revolutionize your development journey with cutting-edge tools, features, and resources. Here's what you can do to get started:</p>
+    <p>Gift Pixel is here to revolutionize your development journey with cutting-edge tools, features, and resources. Here's what you can do to get started:</p>
     <ul style="margin: 20px 0; padding: 0 20px; list-style-type: disc;">
       <li>Explore our documentation for tips and tricks.</li>
       <li>Customize your profile to showcase your work.</li>
