@@ -349,10 +349,37 @@ export const deletePromise = async (req, res) => {
 };
 
 
-export const getPromiseDetails = async (req, res) => {
-    const { id } = req.params; 
+import jwt from 'jsonwebtoken';
+import User from '../models/User';  // Assuming you're using a User model
 
-    if (!id) {
+// Middleware to verify the token
+const verifyToken = (req, res, next) => {
+    const token = req.cookies.token;  // Assuming the token is stored in cookies
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: "No token provided. Unauthorized access."
+        });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Decode the token using the secret
+        req.userId = decoded.userId;  // Attach the userId to the request object for later use
+        next();
+    } catch (error) {
+        return res.status(403).json({
+            success: false,
+            message: "Invalid token. Unauthorized access."
+        });
+    }
+};
+
+
+export const getPromiseDetails = async (req, res) => {
+    const { userId } = req;  // The userId was added to the request by the verifyToken middleware
+
+    if (!userId) {
         return res.status(400).json({
             success: false,
             message: "User ID is required."
@@ -360,7 +387,7 @@ export const getPromiseDetails = async (req, res) => {
     }
 
     try {
-        const user = await User.findById(id).select('promiseTitle promiseDescription timestamps'); 
+        const user = await User.findById(userId).select('promiseTitle promiseDescription timestamps');
 
         if (!user) {
             return res.status(404).json({
@@ -369,9 +396,6 @@ export const getPromiseDetails = async (req, res) => {
             });
         }
 
-       
-       
-        
         res.status(200).json({
             success: true,
             message: "Promises fetched successfully.",
