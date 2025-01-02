@@ -23,7 +23,7 @@ import {
    
 
 } from "../controller/authcontroller.js"
-import { verifytoken } from "../middleware/verifyToken.js"
+import { getUserData, verifytoken } from "../middleware/verifyToken.js"
 
  const router = express.Router()
  router.get("/check-auth", verifytoken, checkAuth)
@@ -37,7 +37,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.get("/veiw-user",viewUser)
  router.put("/update-promise", updatePromise);
  router.delete('/deletePromise', deletePromise);
- router.get('/user/promises', verifytoken , getPromiseDetails);
+ router.get('/user/promises', getUserData , getPromiseDetails);
  router.put("/addRequest", addRequestToPromise);
  router.get('/submit-request', findPromiseWithId);
  router.post ('/get-promise-requests', getRequestsOfPromise);
