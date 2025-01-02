@@ -6,7 +6,7 @@ import {
     verifyEmail, 
     forgotPassword,
     resetpassword,
-    checkAuth,
+    // checkAuth,
     viewUser, 
     updatePromise,  
     deletePromise, 
@@ -19,14 +19,15 @@ import {
     deleteRequest,
     getNotifications,
     analytics,
+    getUserData,
    
    
 
 } from "../controller/authcontroller.js"
-import { verifytoken } from "../middleware/verifyToken.js"
+// import { verifytoken } from "../middleware/verifyToken.js"
 
  const router = express.Router()
- router.get("/check-auth", verifytoken, checkAuth)
+//  router.get("/check-auth", verifytoken, checkAuth)
 
  router.post("/login",login)
  router.post("/signup",signup)
@@ -37,7 +38,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.get("/veiw-user",viewUser)
  router.put("/update-promise", updatePromise);
  router.delete('/deletePromise', deletePromise);
- router.get('/user/promises', verifytoken , getPromiseDetails);
+ router.get('/user/promises', getUserData , getPromiseDetails);
  router.put("/addRequest", addRequestToPromise);
  router.get('/submit-request', findPromiseWithId);
  router.post ('/get-promise-requests', getRequestsOfPromise);
