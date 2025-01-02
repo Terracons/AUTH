@@ -7,8 +7,7 @@ export const generateverificationcode = ()=>{
 export const generateTokenSetCookies =(res, userId)=>{
     const token = jwt.sign(
         {userId}, process.env.JWT_SECRET,{
-            expiresIn:"7d",
-        }
+            expiresIn:"7d",        }
 
         
         
@@ -23,6 +22,7 @@ export const generateTokenSetCookies =(res, userId)=>{
 
         
     )
-
+    console.log(token);
+    
     return token;
 }

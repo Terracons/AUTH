@@ -106,6 +106,9 @@ export const login= async (req, res)=> {
             
         }
         const token = generateTokenSetCookies(res, user._id)
+
+        console.log(token);
+        
         user.lastlogin = Date.now()
         await user.save();
 
@@ -711,8 +714,7 @@ export const analytics = (req, res) => {
 
 
 export const getUserData = async (req, res) => {
-    const token = req.headers.authorization?.split(" ")[1];  // Get token from Authorization header
-
+    const token = req.headers.authorization?.split(" ")[1];  
     if (!token) {
         return res.status(401).json({
             success: false,
