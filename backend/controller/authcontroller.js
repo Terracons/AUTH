@@ -249,8 +249,8 @@ export const updatePromise = async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Extract userId from decoded token
-        const userId = decoded._id;
-
+        const userId = decoded.userId;
+ 
         const { promiseTitle, promiseDescription, promiseType } = req.body;
 
         // Validate promise details
@@ -271,11 +271,23 @@ export const updatePromise = async (req, res) => {
             });
         }
 
+        // Initialize the promise arrays if they don't exist
+        if (!user.promiseTitle) {
+            user.promiseTitle = []; // Initialize as an empty array if not present
+        }
+
+        if (!user.promiseDescription) {
+            user.promiseDescription = []; // Initialize as an empty array if not present
+        }
+
         // Add the promise details to the user's profile
-        user.promises.push({
+        user.promiseTitle.push({
             title: promiseTitle,
+            timestamp: Date.now(),
+        });
+
+        user.promiseDescription.push({
             description: promiseDescription,
-            type: promiseType,
             timestamp: Date.now(),
         });
 
@@ -303,7 +315,7 @@ export const updatePromise = async (req, res) => {
             message: "Internal server error. Could not update promise details.",
         });
     }
-};
+};;
 
 export const deletePromise = async (req, res) => {
     const { index, id } = req.body;
