@@ -21,3 +21,26 @@ export const verifytoken = (req, res, next)=>{
     }
 }
 
+
+export const authenticateToken = (req, res, next) => {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: "No token provided. Unauthorized access."
+        });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid token."
+            });
+        }
+        req.user = decoded;  // Attach decoded user info to the request object
+        next();  // Continue to the next middleware/handler
+    });
+};
+
