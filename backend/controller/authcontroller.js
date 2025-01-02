@@ -4,7 +4,7 @@ import { generateverificationcode,generateTokenSetCookies  } from "../utlitis/ut
 import { sendVerificationEmail, sendWelcomeEmail } from "../mailTrap/emails.js";
 import crypto from "crypto"
 import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share tokens
-
+import jwt from "jsonwebtoken"
 
 
 
@@ -628,9 +628,13 @@ export const getNotifications = async (req, res) => {
 
     try {
         // Decode the token to get the userId
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Replace with your actual JWT secret
-        const userId = decoded._id;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+        console.log(decoded);
+        
+        const userId = decoded.userId;
 
+        console.log(userId);
+        
         // Find the user by userId
         const user = await User.findById(userId);
 
