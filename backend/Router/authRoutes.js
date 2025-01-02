@@ -45,7 +45,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post('/sharePromise/:promiseTitleId', sharePromise);
  router.get('/get-promise-details/:promiseTitleId', getPromiseDetailsById);
  router.post('/delete-request', deleteRequest);  
- router.get('/notifications/',authenticateToken, verifytoken,getNotifications);
+ router.get('/notifications',authenticateToken, verifytoken,getNotifications);
  router.post('/analytics/:promiseId', analytics);  
 
 
