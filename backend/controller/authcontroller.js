@@ -426,9 +426,6 @@ export const addRequestToPromise = async (req, res) => {
     }
 };
 
-
-
-
  
   export const findPromiseWithId =  async (req, res) => {
     try {
@@ -504,7 +501,7 @@ export const sharePromise = async (req, res) => {
         await user.save(); // Save the updated user document with the share token
 
         // Construct the shareable link
-        const shareLink = `http://localhost:5174/promise-gift/${promiseTitleId}`;
+        const shareLink = `http://localhost:5173/promise-gift/${promiseTitleId}`;
 
         // Return the shareable link as part of the response
         return res.status(200).json({
