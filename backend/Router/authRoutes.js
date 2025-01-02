@@ -37,7 +37,7 @@ import { verifytoken } from "../middleware/verifyToken.js"
  router.get("/veiw-user",viewUser)
  router.put("/update-promise", updatePromise);
  router.delete('/deletePromise', deletePromise);
- router.get('/user/promises' , getPromiseDetails);
+ router.get('/user/promises', verifytoken , getPromiseDetails);
  router.put("/addRequest", addRequestToPromise);
  router.get('/submit-request', findPromiseWithId);
  router.post ('/get-promise-requests', getRequestsOfPromise);
