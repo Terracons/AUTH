@@ -26,7 +26,7 @@ import {
 import { getUserData, verifytoken } from "../middleware/verifyToken.js"
 
  const router = express.Router()
- router.get("/check-auth", verifytoken, checkAuth)
+//  router.get("/check-auth", verifytoken, checkAuth)
 
  router.post("/login",login)
  router.post("/signup",signup)
