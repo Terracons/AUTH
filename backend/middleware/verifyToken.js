@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-// import  { User }   from "../models/useModels"; 
+
 
 export const verifytoken = (req, res, next)=>{
     const token = req.headers.authorization?.split(" ")[1];  
