@@ -234,24 +234,35 @@ export const viewUser = async(req, res)=>{
 }
 
 export const updatePromise = async (req, res) => {
-    const { promiseTitle, promiseDescription, id } = req.body;
+    // Retrieve the token from the Authorization header
+    const token = req.headers.authorization?.split(' ')[1]; // Extract Bearer token
 
-    if (!promiseTitle || !promiseDescription) {
+    if (!token) {
         return res.status(400).json({
             success: false,
-            message: "Both promiseTitle and promiseDescription must be provided."
-        });
-    }
-
-    if (!id) {
-        return res.status(400).json({
-            success: false,
-            message: "User ID is required."
+            message: "Token is required."
         });
     }
 
     try {
-        const user = await User.findById(id);
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Extract userId from decoded token
+        const userId = decoded._id;
+
+        const { promiseTitle, promiseDescription, promiseType } = req.body;
+
+        // Validate promise details
+        if (!promiseTitle || !promiseDescription || !promiseType) {
+            return res.status(400).json({
+                success: false,
+                message: "Both promiseTitle, promiseDescription, and promiseType must be provided."
+            });
+        }
+
+        // Find the user by their ID
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({
@@ -261,14 +272,11 @@ export const updatePromise = async (req, res) => {
         }
 
         // Add the promise details to the user's profile
-        user.promiseTitle.push({
+        user.promises.push({
             title: promiseTitle,
-            timestamp: Date.now()
-        });
-
-        user.promiseDescription.push({
             description: promiseDescription,
-            timestamp: Date.now()
+            type: promiseType,
+            timestamp: Date.now(),
         });
 
         // Save the updated user document
@@ -283,7 +291,7 @@ export const updatePromise = async (req, res) => {
             user: user.toObject({
                 versionKey: false,
                 transform: (doc, ret) => {
-                    ret.password = undefined;
+                    ret.password = undefined;  // Remove password before sending response
                     return ret;
                 },
             }),

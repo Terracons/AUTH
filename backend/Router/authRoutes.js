@@ -37,7 +37,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post("/forgot-password",forgotPassword)
  router.post("/reset-password/:token",resetpassword)
  router.get("/veiw-user",viewUser)
- router.put("/update-promise", updatePromise);
+ router.put("/update-promise",authenticateToken,verifytoken, updatePromise);
  router.delete('/deletePromise', deletePromise);
  router.get('/user/promises',authenticateToken , verifytoken , getPromiseDetails);
  router.put("/addRequest", addRequestToPromise);
