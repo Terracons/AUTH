@@ -620,25 +620,34 @@ const getDeviceType = (userAgent) => {
 
 
 export const getNotifications = async (req, res) => {
-    const { userId } = req.params;
+    const token = req.headers.authorization?.split(' ')[1]; // Get token from Authorization header
+
+    if (!token) {
+        return res.status(401).json({ message: 'Authentication token is missing' });
+    }
 
     try {
+        // Decode the token to get the userId
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Replace with your actual JWT secret
+        const userId = decoded._id;
+
+        // Find the user by userId
         const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Return notifications for the user
         return res.status(200).json({
             success: true,
-            notifications: user.notifications
+            notifications: user.notifications,
         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
-
 
 const updateClicks = async (userId, promiseId, userAgent) => {
     const deviceType = getDeviceType(userAgent);  // Get device type from user agent
