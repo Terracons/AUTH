@@ -23,7 +23,7 @@ import {
    
 
 } from "../controller/authcontroller.js"
-import { getUserData, verifytoken } from "../middleware/verifyToken.js"
+import { getUserData } from "../middleware/verifyToken.js"
 
  const router = express.Router()
 //  router.get("/check-auth", verifytoken, checkAuth)
