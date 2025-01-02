@@ -478,7 +478,7 @@ export const addRequestToPromise = async (req, res) => {
 };
 
  
-  export const findPromiseWithId =  async (req, res) => {
+export const findPromiseWithId =  async (req, res) => {
     try {
       const { promiseId, type, input } = req.body;
   
@@ -501,25 +501,37 @@ export const addRequestToPromise = async (req, res) => {
   };
   
 
-export const getRequestsOfPromise =  async (req, res) => {
+  export const getRequestsOfPromise = async (req, res) => {
     try {
-        const { userId, promiseTitleId } = req.body;
+        // Extract the token from the Authorization header
+        const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
 
-        // Find the user by ID
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided. Unauthorized!' });
+        }
+
+        // Verify the token using the JWT secret
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Assuming userId is stored in the token
+        const userId = decoded.userId;
+
+        // Find the user by ID from the database
         const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Find the specific promise by title ID
-        const promise = user.promiseTitle.id(promiseTitleId);
+        // Find the promise within the user's list of promises
+        const { promiseTitleId } = req.body;
+        const promise = user.promiseTitle.id(promiseTitleId); // Assuming promises are stored in 'promiseTitles'
 
         if (!promise) {
             return res.status(404).json({ message: 'Promise not found' });
         }
 
-        // Return the requests from the selected promise
+        // Return the requests of the selected promise
         return res.status(200).json(promise.requests);
     } catch (error) {
         console.error(error);
