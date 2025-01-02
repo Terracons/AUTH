@@ -352,6 +352,54 @@ export const deletePromise = async (req, res) => {
     }
 };
 
+export const getUsername = async (req, res) => {
+    try {
+        // Extract token from the Authorization header
+        const token = req.headers.authorization?.split(' ')[1];  // Get token from Authorization header (Bearer token)
+
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication token is missing"
+            });
+        }
+
+        // Decode the token to get the user ID
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // JWT_SECRET should be your secret key
+
+        if (!decoded || !decoded.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid token"
+            });
+        }
+
+        // Extract userId from the decoded token
+        const userId = decoded.userId;
+
+        // Find the user by ID and select only the 'username' field
+        const user = await User.findById(userId).select('username');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Return the username in the response
+        return res.status(200).json({
+            success: true,
+            username: user.username
+        });
+    } catch (error) {
+        console.error("Error fetching username:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error while fetching username"
+        });
+    }
+};
 
 
 

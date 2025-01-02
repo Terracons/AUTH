@@ -20,6 +20,7 @@ import {
     getNotifications,
     analytics,
     getUserData,
+    getUsername,
    
    
 
@@ -47,6 +48,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post('/delete-request', deleteRequest);  
  router.get('/notifications',authenticateToken, verifytoken,getNotifications);
  router.post('/analytics/:promiseId', analytics);  
+ router.get("/getUsername", authenticateToken, verifytoken, getUsername)
 
 
 
