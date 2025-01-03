@@ -971,7 +971,7 @@ export const paymentVerification = async (req, res) => {
     }
 
     try {
-        const paymentVerificationResponse = await axios.get('https://api.paystack.co/transaction/verify', {
+        const paymentVerificationResponse = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
             params: {
                 reference,
                 trxref
