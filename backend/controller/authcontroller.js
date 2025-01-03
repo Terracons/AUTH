@@ -462,7 +462,6 @@ export const getPromiseDetails = async (req, res) => {
     }
 };
 
-
 export const addRequestToPromise = async (req, res) => {
     const { promiseTitleId, requestType, requestValue } = req.body;
     const token = req.headers.authorization?.split(" ")[1];
@@ -471,27 +470,55 @@ export const addRequestToPromise = async (req, res) => {
         return res.status(403).json({ message: 'No token provided' });
     }
 
+    // Verify the token
+    let decoded;
     try {
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.userId;
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+    const userId = decoded.userId;
 
-        const promiseTitle = user.promiseTitle.id(promiseTitleId);
-        if (!promiseTitle) {
-            return res.status(404).json({ message: 'Promise title not found' });
-        }
+    if (!userId) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+    }
 
-        // Add the new request to the promiseTitle's requests array
-        promiseTitle.requests.push({
-            requestType,
-            requestValue,
-            timestamp: new Date()
-        });
+    // Find the user by userId
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Find the specific promiseTitle by ID
+    const promiseTitle = user.promiseTitle.find(title => title._id.toString() === promiseTitleId);
+    if (!promiseTitle) {
+        return res.status(404).json({ message: 'Promise title not found' });
+    }
+
+    // Validate request data
+    if (!requestType || !requestValue) {
+        return res.status(400).json({ message: 'Request type and value are required' });
+    }
+
+    // Add the new request to the promiseTitle's requests array
+    promiseTitle.requests.push({
+        requestType,
+        requestValue,
+        timestamp: new Date(),
+        paid: false,  // Add default paid status if needed
+    });
+
+    // Update the requestsCreated count in promiseTitle
+    promiseTitle.requestsCreated += 1;
+
+    // Save the user document to persist the changes
+    await user.save();
+
+    // Respond with success
+    return res.status(200).json({ message: 'Request added successfully' });
+};
+
 
         // Save the updated user document
         await user.save();
