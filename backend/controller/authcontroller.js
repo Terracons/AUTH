@@ -941,7 +941,7 @@ export const paymentGateway = async (req, res) => {
         console.log(response);
         
 
-        if (response.data.status === 'true') {
+        if (response.data.status === true) {
             // Return the payment link to frontend
             res.json({
                 success: true,
