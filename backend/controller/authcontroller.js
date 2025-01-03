@@ -5,7 +5,7 @@ import { sendVerificationEmail, sendWelcomeEmail } from "../mailTrap/emails.js";
 import crypto from "crypto"
 import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share tokens
 import jwt from "jsonwebtoken"
-
+import axios from "axios"
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; // Replace with your actual secret key
 
 
@@ -572,6 +572,7 @@ export const findPromiseWithId =  async (req, res) => {
   };
   
 
+
   export const getRequestsOfPromise = async (req, res) => {
     try {
         // Extract the token from the Authorization header
@@ -937,6 +938,9 @@ export const paymentGateway = async (req, res) => {
             }
         );
 
+        console.log(response);
+        
+
         if (response.data.status === 'success') {
             // Return the payment link to frontend
             res.json({
@@ -950,6 +954,8 @@ export const paymentGateway = async (req, res) => {
             });
         }
     } catch (error) {
+        console.log(error);
+        
         res.status(500).json({
             success: false,
             message: 'Error processing payment request',
