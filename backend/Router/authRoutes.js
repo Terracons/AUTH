@@ -50,7 +50,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.delete('/delete-request', authenticateToken, verifytoken, deleteRequest);  
  router.get('/notifications',authenticateToken, verifytoken,getNotifications);
  router.post('/analytics/:promiseId', analytics);  
- router.get("/getUsername", authenticateToken, verifytoken, getUsername)
+ router.get("/getUsername", verifytoken, getUsername)
  router.post ("/paystack/payment",authenticateToken,verifytoken, paymentGateway)
  router.post('/paystack/verify', paymentVerification)
 
