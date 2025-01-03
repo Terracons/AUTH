@@ -6,6 +6,7 @@ import crypto from "crypto"
 import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share tokens
 import jwt from "jsonwebtoken"
 import axios from "axios"
+import { log } from "console";
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; // Replace with your actual secret key
 
 
@@ -965,26 +966,64 @@ export const paymentGateway = async (req, res) => {
 
 export const paymentVerification = async (req, res) => {
     const { reference, trxref } = req.body;
+    const userId = req.userId;  // User ID from the verified token
 
+    // Ensure both reference and trxref are provided
     if (!reference || !trxref) {
         return res.status(400).json({ success: false, message: 'Reference and transaction reference are required.' });
     }
 
     try {
+        // Call Paystack's payment verification API
         const paymentVerificationResponse = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
-           
             headers: {
-                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}` 
+                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`  // Authorization with Paystack Secret Key
             }
         });
 
-        if (paymentVerificationResponse.data.status === true) {
-            // If payment is successful, return a success response
+        // Check if the payment was successful
+        if (paymentVerificationResponse.data.status === true ) {
+            // Payment was successful, now update the request status in the database
+            // Find the user by the userId extracted from the token
+            const user = await User.findById(userId);
+
+            console.log(user);
+            
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found.'
+                });
+            }
+
+            // Find the request within the user's promiseTitle array
+            const promiseTitle = user.promiseTitle.find(title => 
+                title.requests.some(request => request.trxref === reference)
+            );
+
+            if (!promiseTitle) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Request not found in the promise title.'
+                });
+            }
+
+            // Update the payment status of the specific request
+            const request = promiseTitle.requests.find(request => request.id === refrence);
+            if (request) {
+                request.paid = true;  // Mark as paid
+                await user.save();  // Save the updated user document
+            }
+
+            // Return a success response
             return res.status(200).json({
                 success: true,
-                message: 'Payment successful! Your request has been processed.'
+                message: 'Payment successful! Request status updated.'
             });
         } else {
+
+            
             // Payment failed verification
             return res.status(400).json({
                 success: false,
@@ -1001,31 +1040,40 @@ export const paymentVerification = async (req, res) => {
 };
 
 
+
 export const getEmail = async (req, res) => {
     try {
-        const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Get token from cookie or Authorization header
-        
+        const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+
         if (!token) {
             return res.status(401).json({ success: false, message: 'No token provided.' });
         }
 
-        // Verify the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Use your secret key
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        console.log(decoded);
         
-        if (!decoded) {
-            return res.status(401).json({ success: false, message: 'Invalid token.' });
+
+        const userId = decoded.userId;
+
+        // console.log(userId);
+        
+
+        
+
+        const user = await User.find({
+            id: userId
+        });
+
+
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
         }
 
-        // Retrieve the user's email from the decoded token
-        const userEmail = decoded.email; // Assuming the email is stored in the token
+        const userEmail = user.email;
 
-        if (!userEmail) {
-            return res.status(400).json({ success: false, message: 'Email not found in token.' });
-        }
-
-        // Optionally: You can query the database to get the user information
-        // const user = await User.findById(decoded.userId);  // Use userId or another unique field in the token
-
+        // Respond with the user's email
         res.status(200).json({
             success: true,
             email: userEmail
@@ -1033,6 +1081,17 @@ export const getEmail = async (req, res) => {
 
     } catch (error) {
         console.error(error);
+        
+        if (error.name === 'JsonWebTokenError') {
+            // Invalid token
+            return res.status(401).json({ success: false, message: 'Invalid token.' });
+        }
+        if (error.name === 'TokenExpiredError') {
+            // Token expired
+            return res.status(401).json({ success: false, message: 'Token has expired.' });
+        }
+
+        // Server error
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
