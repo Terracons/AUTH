@@ -977,7 +977,7 @@ export const paymentVerification = async (req, res) => {
         );
 
         // Step 2: Check if the payment was successful
-        if (response.data.status === 'success' && response.data.data.status === 'success') {
+        if (response.data.status === true && response.data.data.status === true) {
             // Step 3: Find the user by email (or other identifiers)
             const user = await User.findOne({ email: email });
 
