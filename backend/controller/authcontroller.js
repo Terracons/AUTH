@@ -412,7 +412,7 @@ export const getUsername = async (req, res) => {
             success: true,
             username: user.username
         });
-    } catch (error) {
+    } catch (error) { 
         console.error("Error fetching username:", error);
         return res.status(500).json({
             success: false,
@@ -465,15 +465,15 @@ export const getPromiseDetails = async (req, res) => {
 
 export const addRequestToPromise = async (req, res) => {
     const { promiseTitleId, requestType, requestValue } = req.body;
-    const token = req.headers.authorization?.split(" ")[1]; // Extract the token from the Authorization header
+    const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
         return res.status(403).json({ message: 'No token provided' });
     }
 
     try {
-        // Verify the token and decode the userId
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Make sure you have the secret key in your environment variables
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
 
         const user = await User.findById(userId);

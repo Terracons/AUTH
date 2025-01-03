@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
             _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
             requestType: { 
                 type: String, 
-                enum: ['money', 'Gift-item'], 
+                enum: ['money', 'gift-item'], 
                 required: false 
             },
             requestValue: { 
