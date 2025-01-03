@@ -472,11 +472,16 @@ export const addRequestToPromise = async (req, res) => {
   if (!token) {
     return res.status(403).json({ message: 'No token provided' });
   }
-
+  let userId
   try {
     // Decode the token to get the user ID
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    console.log(decoded);
+    
+     userId = decoded.userId;
+
+    console.log(userId);
+    
 
     // Find the user in the database
     const user = await User.findById(userId);
