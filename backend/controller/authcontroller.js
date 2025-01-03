@@ -923,7 +923,6 @@ export const paymentGateway = async (req, res) => {
     const { amount, email, orderId } = req.body;
 
     try {
-       
         const response = await axios.post(
             'https://api.paystack.co/transaction/initialize',
             {
@@ -939,13 +938,13 @@ export const paymentGateway = async (req, res) => {
         );
 
         console.log(response);
-        
 
         if (response.data.status === true) {
             // Return the payment link to frontend
             res.json({
                 success: true,
                 authorization_url: response.data.data.authorization_url,
+                reference: response.data.data.reference,  // Send the reference
             });
         } else {
             res.json({
@@ -963,11 +962,11 @@ export const paymentGateway = async (req, res) => {
     }
 }
 
-
 export const paymentVerification = async (req, res) => {
-    const reference = req.body.reference;
+    const { reference, email, orderId } = req.body;  // Assuming you send the email and orderId in the request
 
     try {
+        // Step 1: Verify the payment using Paystack
         const response = await axios.get(
             `https://api.paystack.co/transaction/verify/${reference}`,
             {
@@ -977,13 +976,51 @@ export const paymentVerification = async (req, res) => {
             }
         );
 
+        // Step 2: Check if the payment was successful
         if (response.data.status === 'success' && response.data.data.status === 'success') {
-            // Payment is successful, update your database here
-            res.json({ success: true, message: 'Payment successful' });
+            // Step 3: Find the user by email (or other identifiers)
+            const user = await User.findOne({ email: email });
+
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+
+            // Step 4: Find the correct promiseTitle and update the request status
+            const promiseTitleIndex = user.promiseTitle.findIndex(pt => pt._id.toString() === orderId);
+
+            if (promiseTitleIndex === -1) {
+                return res.status(404).json({ success: false, message: 'Promise title not found' });
+            }
+
+            // Find the corresponding request and mark it as paid
+            const requestIndex = user.promiseTitle[promiseTitleIndex].requests.findIndex(req => req._id.toString() === orderId);
+
+            if (requestIndex === -1) {
+                return res.status(404).json({ success: false, message: 'Request not found' });
+            }
+
+            // Mark the request as paid
+            user.promiseTitle[promiseTitleIndex].requests[requestIndex].paid = true;
+
+            // Save the user document with the updated request
+            await user.save();
+
+            // Step 5: Return success response
+            res.json({
+                success: true,
+                message: 'Payment successful and request marked as paid',
+            });
         } else {
-            res.json({ success: false, message: 'Payment failed' });
+            return res.json({
+                success: false,
+                message: 'Payment verification failed',
+            });
         }
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error verifying payment' });
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Error verifying payment',
+        });
     }
 };
