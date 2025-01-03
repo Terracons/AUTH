@@ -929,6 +929,7 @@ export const paymentGateway = async (req, res) => {
                 email: email,
                 amount: amount * 100, // Paystack expects amount in kobo (cents)
                 order_id: orderId,
+                callback_url: "localhost:5173/sigin"
             },
             {
                 headers: {
