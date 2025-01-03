@@ -462,76 +462,89 @@ export const getPromiseDetails = async (req, res) => {
     }
 };
 
+
+
 export const addRequestToPromise = async (req, res) => {
-    const { promiseTitleId, requestType, requestValue } = req.body;
-    const token = req.headers.authorization?.split(" ")[1];
+  const { promiseTitleId, requestType, requestValue } = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
 
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
+  // Check if the token exists
+  if (!token) {
+    return res.status(403).json({ message: 'No token provided' });
+  }
 
-    // Verify the token
-    let decoded;
-    try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-        return res.status(401).json({ message: 'Invalid token' });
-    }
-
+  try {
+    // Decode the token to get the user ID
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    if (!userId) {
-        return res.status(400).json({ message: 'Invalid user ID' });
-    }
-
-    // Find the user by userId
+    // Find the user in the database
     const user = await User.findById(userId);
     if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Find the specific promiseTitle by ID
-    const promiseTitle = user.promiseTitle.find(title => title._id.toString() === promiseTitleId);
+    // Find the specific promise title by ID
+    const promiseTitle = user.promiseTitle.id(promiseTitleId);
     if (!promiseTitle) {
-        return res.status(404).json({ message: 'Promise title not found' });
+      return res.status(404).json({ message: 'Promise title not found' });
     }
 
-    // Validate request data
-    if (!requestType || !requestValue) {
-        return res.status(400).json({ message: 'Request type and value are required' });
-    }
+    // Prepare the new request to add to the promise title
+    const newRequest = {
+      requestType,
+      requestValue,
+      timestamp: new Date(),
+    };
 
     // Add the new request to the promiseTitle's requests array
-    promiseTitle.requests.push({
-        requestType,
-        requestValue,
-        timestamp: new Date(),
-        paid: false,  // Add default paid status if needed
-    });
+    promiseTitle.requests.push(newRequest);
+    promiseTitle.requestsCreated += 1; // Increment the number of requests created
 
-    // Update the requestsCreated count in promiseTitle
-    promiseTitle.requestsCreated += 1;
-
-    // Save the user document to persist the changes
+    // Save the user document with the updated promiseTitle
     await user.save();
 
-    // Respond with success
-    return res.status(200).json({ message: 'Request added successfully' });
-};
+    // Add a notification for the user regarding the new request
+    const notificationMessage = `You have added a new ${requestType} request to your promise titled "${promiseTitle.title}".`;
+    user.notifications.push({
+      message: notificationMessage,
+      timestamp: new Date(),
+    });
 
+    // Save the user document with the new notification
+    await user.save();
 
-        // Save the updated user document
-        await user.save();
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: 'Request added successfully!',
+    });
+  } catch (error) {
+    console.error('Error adding request to promise:', error);
 
-        // Add notification for request addition
-        await addNotification(user._id, `You added a new request (${requestType}) to your promise titled "${promiseTitle.title}".`);
-
-        return res.status(201).json({ message: 'Request added successfully', user });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+    // Add an error notification for the user
+    const user = await User.findById(userId);
+    if (user) {
+      user.notifications.push({
+        message: 'There was an error adding your request to the promise.',
+        timestamp: new Date(),
+      });
+      await user.save();
     }
+
+    // Return error response
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
 };
+
+
+
+
+
+
 
  
 export const findPromiseWithId =  async (req, res) => {
