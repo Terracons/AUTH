@@ -464,9 +464,18 @@ export const getPromiseDetails = async (req, res) => {
 
 
 export const addRequestToPromise = async (req, res) => {
-    const { userId, promiseTitleId, requestType, requestValue } = req.body;
+    const { promiseTitleId, requestType, requestValue } = req.body;
+    const token = req.headers.authorization?.split(" ")[1]; // Extract the token from the Authorization header
+
+    if (!token) {
+        return res.status(403).json({ message: 'No token provided' });
+    }
 
     try {
+        // Verify the token and decode the userId
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Make sure you have the secret key in your environment variables
+        const userId = decoded.userId;
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -488,7 +497,7 @@ export const addRequestToPromise = async (req, res) => {
         await user.save();
 
         // Add notification for request addition
-        await addNotification(user._id, `You added a new request (${requestType})  to your promise titled "${promiseTitle.title}".`);
+        await addNotification(user._id, `You added a new request (${requestType}) to your promise titled "${promiseTitle.title}".`);
 
         return res.status(201).json({ message: 'Request added successfully', user });
     } catch (error) {
