@@ -972,16 +972,13 @@ export const paymentVerification = async (req, res) => {
 
     try {
         const paymentVerificationResponse = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
-            params: {
-                reference,
-                trxref
-            },
+           
             headers: {
-                'Authorization': `Bearer YOUR_SECRET_KEY`  // Authentication key
+                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}` 
             }
         });
 
-        if (paymentVerificationResponse.data.status === 'success') {
+        if (paymentVerificationResponse.data.status === true) {
             // If payment is successful, return a success response
             return res.status(200).json({
                 success: true,
@@ -1001,7 +998,7 @@ export const paymentVerification = async (req, res) => {
             message: 'Error verifying payment.'
         });
     }
-});
+};
 
 
 export const getEmail = async (req, res) => {
