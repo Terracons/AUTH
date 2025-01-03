@@ -6,6 +6,8 @@ import crypto from "crypto"
 import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share tokens
 import jwt from "jsonwebtoken"
 
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; // Replace with your actual secret key
+
 
 
 
@@ -683,17 +685,17 @@ export const getPromiseDetailsById = async (req, res) => {
 export const deleteRequest = async (req, res) => {
     const { requestId, promiseId } = req.body;
 
-    // Get the token from headers
+  
     const token = req.headers.authorization?.split(' ')[1]; 
 
-    // Check if token exists
+    
     if (!token) {
         return res.status(401).json({ message: 'Token is required for authentication' });
     }
 
     try {
         // Verify the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);  // Ensure JWT_SECRET_KEY is set correctly
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
         const userId = decoded.userId;  // Get the userId from decoded token
 
@@ -914,3 +916,68 @@ export const getUserData = async (req, res) => {
     }
 };
 
+
+
+export const paymentGateway = async (req, res) => {
+    const { amount, email, orderId } = req.body;
+
+    try {
+       
+        const response = await axios.post(
+            'https://api.paystack.co/transaction/initialize',
+            {
+                email: email,
+                amount: amount * 100, // Paystack expects amount in kobo (cents)
+                order_id: orderId,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                },
+            }
+        );
+
+        if (response.data.status === 'success') {
+            // Return the payment link to frontend
+            res.json({
+                success: true,
+                authorization_url: response.data.data.authorization_url,
+            });
+        } else {
+            res.json({
+                success: false,
+                message: 'Payment initialization failed',
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error processing payment request',
+        });
+    }
+}
+
+
+export const paymentVerification = async (req, res) => {
+    const reference = req.body.reference;
+
+    try {
+        const response = await axios.get(
+            `https://api.paystack.co/transaction/verify/${reference}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                },
+            }
+        );
+
+        if (response.data.status === 'success' && response.data.data.status === 'success') {
+            // Payment is successful, update your database here
+            res.json({ success: true, message: 'Payment successful' });
+        } else {
+            res.json({ success: false, message: 'Payment failed' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error verifying payment' });
+    }
+};
