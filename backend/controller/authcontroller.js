@@ -546,11 +546,6 @@ export const addRequestToPromise = async (req, res) => {
 };
 
 
-
-
-
-
-
  
 export const findPromiseWithId =  async (req, res) => {
     try {
@@ -687,11 +682,22 @@ export const getPromiseDetailsById = async (req, res) => {
 
 
 export const deleteRequest = async (req, res) => {
-    const { userId, requestId, promiseId } = req.body;
+    const { requestId, promiseId } = req.body;
+
+    // Extract token from Authorization header
+    const token = req.headers.authorization?.split(' ')[1];  // Assuming token is sent as "Bearer <token>"
+
+    if (!token) {
+        return res.status(401).json({ message: 'Token is required for authentication' });
+    }
 
     try {
-        const user = await User.findById(userId);
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);  // Make sure to have JWT_SECRET_KEY in your env
 
+        const userId = decoded.userId;  // Get the userId from decoded token
+
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -707,7 +713,6 @@ export const deleteRequest = async (req, res) => {
         }
 
         promiseTitle.requests.splice(requestIndex, 1);
-
         await user.save();
 
         // Add notification for request deletion
@@ -716,6 +721,9 @@ export const deleteRequest = async (req, res) => {
         return res.status(200).json({ message: 'Request deleted successfully' });
     } catch (err) {
         console.error(err);
+        if (err.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: 'Invalid or expired token' });
+        }
         return res.status(500).json({ message: 'Server error while deleting request' });
     }
 };
