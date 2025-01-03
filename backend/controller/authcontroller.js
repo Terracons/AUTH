@@ -964,67 +964,44 @@ export const paymentGateway = async (req, res) => {
 }
 
 export const paymentVerification = async (req, res) => {
-    const { reference, email, orderId } = req.body;  // Assuming you send the email and orderId in the request
+    const { reference, trxref } = req.body;
+
+    if (!reference || !trxref) {
+        return res.status(400).json({ success: false, message: 'Reference and transaction reference are required.' });
+    }
 
     try {
-        // Step 1: Verify the payment using Paystack
-        const response = await axios.get(
-            `https://api.paystack.co/transaction/verify/${reference}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-                },
+        const paymentVerificationResponse = await axios.get('https://api.paystack.co/transaction/verify', {
+            params: {
+                reference,
+                trxref
+            },
+            headers: {
+                'Authorization': `Bearer YOUR_SECRET_KEY`  // Authentication key
             }
-        );
+        });
 
-        // Step 2: Check if the payment was successful
-        if (response.data.status === true && response.data.data.status === true) {
-            // Step 3: Find the user by email (or other identifiers)
-            const user = await User.findOne({ email: email });
-
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'User not found' });
-            }
-
-            // Step 4: Find the correct promiseTitle and update the request status
-            const promiseTitleIndex = user.promiseTitle.findIndex(pt => pt._id.toString() === orderId);
-
-            if (promiseTitleIndex === -1) {
-                return res.status(404).json({ success: false, message: 'Promise title not found' });
-            }
-
-            // Find the corresponding request and mark it as paid
-            const requestIndex = user.promiseTitle[promiseTitleIndex].requests.findIndex(req => req._id.toString() === orderId);
-
-            if (requestIndex === -1) {
-                return res.status(404).json({ success: false, message: 'Request not found' });
-            }
-
-            // Mark the request as paid
-            user.promiseTitle[promiseTitleIndex].requests[requestIndex].paid = true;
-
-            // Save the user document with the updated request
-            await user.save();
-
-            // Step 5: Return success response
-            res.json({
+        if (paymentVerificationResponse.data.status === 'success') {
+            // If payment is successful, return a success response
+            return res.status(200).json({
                 success: true,
-                message: 'Payment successful and request marked as paid',
+                message: 'Payment successful! Your request has been processed.'
             });
         } else {
-            return res.json({
+            // Payment failed verification
+            return res.status(400).json({
                 success: false,
-                message: 'Payment verification failed',
+                message: 'Payment verification failed.'
             });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
+        console.error('Error verifying payment:', error);
+        return res.status(500).json({
             success: false,
-            message: 'Error verifying payment',
+            message: 'Error verifying payment.'
         });
     }
-};
+});
 
 
 export const getEmail = async (req, res) => {
