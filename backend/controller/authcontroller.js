@@ -1025,3 +1025,40 @@ export const paymentVerification = async (req, res) => {
         });
     }
 };
+
+
+export const getEmail = async (req, res) => {
+    try {
+        const token = req.cookies.token || req.headers.authorization?.split(' ')[1]; // Get token from cookie or Authorization header
+        
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'No token provided.' });
+        }
+
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Use your secret key
+        
+        if (!decoded) {
+            return res.status(401).json({ success: false, message: 'Invalid token.' });
+        }
+
+        // Retrieve the user's email from the decoded token
+        const userEmail = decoded.email; // Assuming the email is stored in the token
+
+        if (!userEmail) {
+            return res.status(400).json({ success: false, message: 'Email not found in token.' });
+        }
+
+        // Optionally: You can query the database to get the user information
+        // const user = await User.findById(decoded.userId);  // Use userId or another unique field in the token
+
+        res.status(200).json({
+            success: true,
+            email: userEmail
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
