@@ -680,39 +680,45 @@ export const getPromiseDetailsById = async (req, res) => {
     }
 };
 
-
 export const deleteRequest = async (req, res) => {
     const { requestId, promiseId } = req.body;
 
-    // Extract token from Authorization header
-    const token = req.headers.authorization?.split(' ')[1];  // Assuming token is sent as "Bearer <token>"
+    // Get the token from headers
+    const token = req.headers.authorization?.split(' ')[1]; 
 
+    // Check if token exists
     if (!token) {
         return res.status(401).json({ message: 'Token is required for authentication' });
     }
 
     try {
         // Verify the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);  // Make sure to have JWT_SECRET_KEY in your env
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);  // Ensure JWT_SECRET_KEY is set correctly
 
         const userId = decoded.userId;  // Get the userId from decoded token
 
+        // Find the user
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const promiseTitle = user.promiseTitle.id(promiseId);
+        // Find the promise by ID within the user's promiseTitle array
+        const promiseTitle = user.promiseTitle.find(promise => promise._id.toString() === promiseId);
         if (!promiseTitle) {
             return res.status(404).json({ message: 'Promise not found' });
         }
 
+        // Find the index of the request to delete
         const requestIndex = promiseTitle.requests.findIndex(req => req._id.toString() === requestId);
         if (requestIndex === -1) {
             return res.status(404).json({ message: 'Request not found' });
         }
 
+        // Remove the request from the array using splice
         promiseTitle.requests.splice(requestIndex, 1);
+        
+        // Save the user after modification
         await user.save();
 
         // Add notification for request deletion
@@ -721,13 +727,16 @@ export const deleteRequest = async (req, res) => {
         return res.status(200).json({ message: 'Request deleted successfully' });
     } catch (err) {
         console.error(err);
+
+        // Handle JWT error specifically
         if (err.name === 'JsonWebTokenError') {
             return res.status(401).json({ message: 'Invalid or expired token' });
         }
+
+        // Handle other errors
         return res.status(500).json({ message: 'Server error while deleting request' });
     }
 };
-
 
 const addNotification = async (userId, message) => {
     const user = await User.findById(userId);
