@@ -3,13 +3,13 @@ import bycrptjs from "bcryptjs"
 import { generateverificationcode,generateTokenSetCookies  } from "../utlitis/utilitis.js";
 import { sendVerificationEmail, sendWelcomeEmail } from "../mailTrap/emails.js";
 import crypto from "crypto"
-import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share tokens
+import { v4 as uuidv4 } from "uuid"; 
 import jwt from "jsonwebtoken"
 import axios from "axios"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; // Replace with your actual secret key
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; 
 
 dotenv.config()
 
@@ -638,13 +638,13 @@ export const sharePromise = async (req, res) => {
         await user.save(); // Save the updated user document with the share token
 
         // Construct the shareable link
-        const shareLink = `http://localhost:5173/promise-gift/${promiseTitleId}`;
+        const shareLink = `https://gift-pixel.vercel.app/${promiseTitleId}`;
 
         // Return the shareable link as part of the response
         return res.status(200).json({
             success: true,
             message: "Shareable link generated successfully.",
-            shareLink: shareLink, // Send the generated link to the client
+            shareLink: shareLink, 
         });
     } catch (error) {
         console.error(error);
@@ -663,14 +663,14 @@ export const getPromiseDetailsById = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Promise not found.' });
         }
 
-        // Find the specific promise using the ID within the user's promises
+
         const promise = user.promiseTitle.id(promiseTitleId);
 
         if (!promise) {
             return res.status(404).json({ success: false, message: 'Promise not found.' });
         }
 
-        // Return the promise details
+      
         return res.status(200).json({
             success: true,
             promise: {

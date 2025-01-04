@@ -54,10 +54,10 @@ const userSchema = new mongoose.Schema({
                 type: mongoose.Schema.Types.Mixed, 
                 required: false 
             },
-            paid: { type: Boolean, default: false }, // Payment status
+            paid: { type: Boolean, default: false },
         }],
         timestamp: { type: Date, default: Date.now },
-        shareToken: { type: String, required: false },  // Add the shareToken field here
+        shareToken: { type: String, required: false },
         clicks: {
             desktop: { type: Number, default: 0 },
             android: { type: Number, default: 0 },
@@ -77,7 +77,23 @@ const userSchema = new mongoose.Schema({
     notifications: [{
         message: { type: String, required: false },
         timestamp: { type: Date, default: Date.now }
-    }]
+    }],
+
+    wallet: {
+        balance: {
+            type: Number,
+            default: 0
+        },
+        currency: {
+            type: String,
+            default: 'NGN' 
+        },
+        transactions: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Transaction' 
+        }]
+    }
+
 }, { timestamps: true });
 
 export const User = mongoose.model('User', userSchema);
