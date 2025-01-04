@@ -6,7 +6,8 @@ import crypto from "crypto"
 import { v4 as uuidv4 } from "uuid"; // Importing UUID to generate unique share tokens
 import jwt from "jsonwebtoken"
 import axios from "axios"
-import { log } from "console";
+import mongoose from "mongoose";
+
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; // Replace with your actual secret key
 
 
@@ -1040,7 +1041,6 @@ export const paymentVerification = async (req, res) => {
 };
 
 
-
 export const getEmail = async (req, res) => {
     try {
         const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
@@ -1051,22 +1051,17 @@ export const getEmail = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+
         console.log(decoded);
         
-
-        const userId = decoded.userId;
-
-        // console.log(userId);
         
+        const userId = decoded.userId
 
+        console.log(userId);
         
-
-        const user = await User.find({
-            id: userId
-        });
-
-
         
+        // Fetch user based on userId
+        const user = await User.findOne({ _id: new mongoose.Types.ObjectId(userId) });
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
