@@ -53,7 +53,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post('/analytics/:promiseId', analytics);  
  router.get("/getUsername", verifytoken, getUsername)
  router.post ("/paystack/payment", verifytoken, paymentGateway)
- router.post('/payment/verify', verifytoken, paymentVerification)
+ router.post('/payment/verify', paymentVerification)
  router.get('/get-user-email', getEmail)
 
 
