@@ -983,13 +983,10 @@ export const paymentVerification = async (req, res) => {
         });
 
         // Check if the payment was successful
-        if (paymentVerificationResponse.data.status === true ) {
+        if (paymentVerificationResponse.data.status === true) {
             // Payment was successful, now update the request status in the database
             // Find the user by the userId extracted from the token
             const user = await User.findById(userId);
-
-            // console.log(user);
-            
 
             if (!user) {
                 return res.status(404).json({
@@ -999,8 +996,8 @@ export const paymentVerification = async (req, res) => {
             }
 
             // Find the request within the user's promiseTitle array
-            const promiseTitle = user.promiseTitle.find(title => 
-                title.requests.some(request => request.id === requestId)
+            const promiseTitle = user.promiseTitle.find(title =>
+                title.requests.some(request => request.id.toString() === requestId.toString())
             );
 
             if (!promiseTitle) {
@@ -1010,11 +1007,14 @@ export const paymentVerification = async (req, res) => {
                 });
             }
 
-            // Update the payment status of the specific request
-            const request = promiseTitle.requests.find(request => request === requestId);
+            // Find the specific request in the promiseTitle.requests array
+            const request = promiseTitle.requests.find(req => req.id.toString() === requestId.toString());
+
             if (request) {
-                request.paid = true;  // Mark as paid
-                await user.save();  // Save the updated user document
+                // console.log(request);
+                
+                request.paid = true;  // Update the request's payment status
+                await user.save();  // Save the updated user object
             }
 
             // Return a success response
@@ -1023,8 +1023,6 @@ export const paymentVerification = async (req, res) => {
                 message: 'Payment successful! Request status updated.'
             });
         } else {
-
-            
             // Payment failed verification
             return res.status(400).json({
                 success: false,
