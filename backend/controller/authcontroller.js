@@ -638,7 +638,7 @@ export const sharePromise = async (req, res) => {
         await user.save(); // Save the updated user document with the share token
 
         // Construct the shareable link
-        const shareLink = `https://gift-pixel.vercel.app/${promiseTitleId}`;
+        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}`;
 
         // Return the shareable link as part of the response
         return res.status(200).json({
