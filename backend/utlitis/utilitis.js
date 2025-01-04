@@ -5,12 +5,13 @@ export const generateverificationcode = ()=>{
 }
 
 export const generateTokenSetCookies =(res, userId)=>{
-    const token =jwt.sign(
-        { userId: userId.toString() }, 
-        process.env.JWT_SECRET, {
-            expiresIn: "7d",
-        }
-    );
+    const token = jwt.sign(
+        {userId : userId}, process.env.JWT_SECRET,{
+            expiresIn:"7d",        }
+
+        
+        
+    )
     res.cookie(
         "token",token,{
             httponly:true,
