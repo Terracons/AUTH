@@ -18,8 +18,6 @@ import {
     getPromiseDetailsById,
     deleteRequest,
     getNotifications,
-    analytics,
-    getUserData,
     getUsername,
     paymentGateway,
     paymentVerification,
@@ -50,7 +48,6 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.get('/get-promise-details/:promiseTitleId', getPromiseDetailsById);
  router.delete('/delete-request', authenticateToken, verifytoken, deleteRequest);  
  router.get('/notifications',authenticateToken, verifytoken,getNotifications);
- router.post('/analytics/:promiseId', analytics);  
  router.get("/getUsername", verifytoken, getUsername)
  router.post ("/paystack/payment", verifytoken, paymentGateway)
  router.post('/payment/verify', paymentVerification)
