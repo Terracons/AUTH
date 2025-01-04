@@ -966,7 +966,7 @@ export const paymentGateway = async (req, res) => {
 }
 
 export const paymentVerification = async (req, res) => {
-    const { reference, trxref } = req.body;
+    const { reference, trxref, requestId } = req.body;
     const userId = req.userId;  // User ID from the verified token
 
     // Ensure both reference and trxref are provided
@@ -988,7 +988,7 @@ export const paymentVerification = async (req, res) => {
             // Find the user by the userId extracted from the token
             const user = await User.findById(userId);
 
-            console.log(user);
+            // console.log(user);
             
 
             if (!user) {
@@ -1000,7 +1000,7 @@ export const paymentVerification = async (req, res) => {
 
             // Find the request within the user's promiseTitle array
             const promiseTitle = user.promiseTitle.find(title => 
-                title.requests.some(request => request.trxref === reference)
+                title.requests.some(request => request.id === requestId)
             );
 
             if (!promiseTitle) {
@@ -1011,7 +1011,7 @@ export const paymentVerification = async (req, res) => {
             }
 
             // Update the payment status of the specific request
-            const request = promiseTitle.requests.find(request => request.id === refrence);
+            const request = promiseTitle.requests.find(request => request === requestId);
             if (request) {
                 request.paid = true;  // Mark as paid
                 await user.save();  // Save the updated user document
