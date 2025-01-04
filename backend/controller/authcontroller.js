@@ -907,7 +907,7 @@ export const paymentGateway = async (req, res) => {
                 email: email,  // The email of the user making the payment
                 amount: amount * 100,  // Amount is expected in kobo, so I multiply the amount by 100
                 order_id: orderId,  // A unique order identifier
-                callback_url: "http://https://gift-pixel.vercel.app/payment-success",  // URL to redirect after payment
+                callback_url: "https://gift-pixel.vercel.app/payment-success",  // URL to redirect after payment
             },
             {
                 headers: {
