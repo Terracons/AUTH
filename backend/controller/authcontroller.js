@@ -967,14 +967,23 @@ export const paymentGateway = async (req, res) => {
 
 export const paymentVerification = async (req, res) => {
     const { reference, trxref, requestId } = req.body;
-    const userId = req.userId;  // User ID from the verified token
 
-    // Ensure both reference and trxref are provided
-    if (!reference || !trxref) {
-        return res.status(400).json({ success: false, message: 'Reference and transaction reference are required.' });
+    // Extract the token from the Authorization header
+    const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+    if (!token) {
+        return res.status(400).json({ success: false, message: 'Token is required in the Authorization header.' });
     }
 
     try {
+        // Decode the token and get the userId
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);  // Use your secret key here
+        const userId = decoded.userId;  // Assuming the userId is stored in the token payload
+
+        // Ensure both reference and trxref are provided
+        if (!reference || !trxref) {
+            return res.status(400).json({ success: false, message: 'Reference and transaction reference are required.' });
+        }
+
         // Call Paystack's payment verification API
         const paymentVerificationResponse = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
             headers: {
@@ -1011,8 +1020,6 @@ export const paymentVerification = async (req, res) => {
             const request = promiseTitle.requests.find(req => req.id.toString() === requestId.toString());
 
             if (request) {
-                // console.log(request);
-                
                 request.paid = true;  // Update the request's payment status
                 await user.save();  // Save the updated user object
             }
@@ -1037,7 +1044,6 @@ export const paymentVerification = async (req, res) => {
         });
     }
 };
-
 
 export const getEmail = async (req, res) => {
     try {
