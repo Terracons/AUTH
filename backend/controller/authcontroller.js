@@ -959,8 +959,18 @@ export const paymentVerification = async (req, res) => {
     try {
         // Decode the JWT token to extract the userId of the payer (person making the payment).
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const payerId = decoded.userId;  // The userId of the person making the payment (payer).
+        const payerId = decoded.userId;  
+        
+        console.log(payerId);
 
+        if (payerId){
+            const findPayeeName = await User.findById(payerId)
+            const payeeName = findPayeeName.username
+            console.log(payeeName);
+            
+            
+        }
+        
         // Ensure that all required parameters are provided in the request body.
         if (!reference || !trxref || !username) {
             return res.status(400).json({ success: false, message: 'Reference, transaction reference, and username are required.' });
@@ -1019,7 +1029,7 @@ export const paymentVerification = async (req, res) => {
 
             // Now, create a transaction record for the payer (person making the payment).
             const transaction = {
-                userId: payerId,  // The userId of the payer (person making the payment)
+                username: payeeName,  // The userId of the payer (person making the payment)
                 amount: paidAmount,  // The amount paid into the wallet
                 description: `User ${username} has paid ${paidAmount} into your wallet.`,  // Description of the transaction
                 timestamp: new Date()  // The timestamp of the transaction
