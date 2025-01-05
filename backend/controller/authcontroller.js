@@ -684,39 +684,38 @@ export const sharePromise = async (req, res) => {
 
 
 export const getPromiseDetailsById = async (req, res) => {
-    const { promiseTitleId } = req.params; // I extract the promiseTitleId from the URL parameters to know which promise to fetch.
+    const { promiseTitleId } = req.params; // Extract the promiseTitleId from the URL parameters.
 
     try {
-        // I begin by searching for the user who has the promise associated with the promiseTitleId.
-        // This is important to ensure that the promise belongs to an actual user.
+        // Search for the user who has the promise associated with the promiseTitleId.
         const user = await User.findOne({ 'promiseTitle._id': promiseTitleId });
 
-        // If the user is not found, I return a 404 response indicating the promise wasn't found.
+        // If the user is not found, return a 404 response indicating the promise wasn't found.
         if (!user) {
             return res.status(404).json({ success: false, message: 'Promise not found.' });
         }
 
-        // Once I have the user, I proceed to find the specific promise by its ID within the user's promiseTitle array.
-        const promise = user.promiseTitle.id(promiseTitleId); // I use the ID to access the correct promise.
+        // Find the specific promise by its ID within the user's promiseTitle array.
+        const promise = user.promiseTitle.id(promiseTitleId); // Use the ID to access the correct promise.
 
-        // If the promise isn't found, I return another 404 response to indicate the promise is missing.
+        // If the promise isn't found, return another 404 response.
         if (!promise) {
             return res.status(404).json({ success: false, message: 'Promise not found.' });
         }
 
-        // If everything goes well, I return the details of the promise, including its title, description, and associated requests.
-        // This will allow the client to see the details of the promise.
+        // If everything is fine, return the details of the promise, including its title, description, associated requests, and the username.
         return res.status(200).json({
             success: true,
             promise: {
                 title: promise.title,
                 description: promise.description,
                 requests: promise.requests,
-            }
+            },
+            username: user.username // Include the username here.
         });
     } catch (error) {
-        // If there's an error during the database operations, I catch it and log the error for debugging purposes.
-        // Then, I send a generic 500 error response to the client to let them know something went wrong on the server.
+        // If there's an error during the database operations, catch it and log the error for debugging purposes.
+        // Then, send a 500 error response.
         console.error('Error fetching promise details:', error);
         return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
