@@ -89,9 +89,12 @@ const userSchema = new mongoose.Schema({
             default: 'NGN' 
         },
         transactions: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Transaction' 
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to the user making the payment
+            amount: { type: Number, required: true },  // Amount of payment
+            description: { type: String, required: true },  // Transaction description
+            timestamp: { type: Date, default: Date.now }  // Transaction timestamp
         }]
+        
     }
 
 }, { timestamps: true });

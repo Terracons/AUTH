@@ -945,11 +945,11 @@ export const paymentGateway = async (req, res) => {
 
 
 export const paymentVerification = async (req, res) => {
-    // Extract the necessary parameters from the request body.
+    // Extract necessary parameters from the request body.
     const { reference, trxref, requestId, username } = req.body;
 
-    // Extract the token from the Authorization header for authentication.
-    const token = req.headers['authorization']?.split(' ')[1];  // Extract token from header (bearer token).
+    // Extract the token from the Authorization header to authenticate the request.
+    const token = req.headers['authorization']?.split(' ')[1];  // Extract token from the header (bearer token).
 
     // If the token is missing, return a 400 response indicating the token is required.
     if (!token) {
@@ -957,11 +957,11 @@ export const paymentVerification = async (req, res) => {
     }
 
     try {
-        // Decode the JWT token to extract the userId for authentication and access control.
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);  
-        const userId = decoded.userId;  // We still extract userId for authorization purposes.
+        // Decode the JWT token to extract the userId of the payer (person making the payment).
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const payerId = decoded.userId;  // The userId of the person making the payment (payer).
 
-        // Ensure that both reference and trxref are provided in the request body.
+        // Ensure that all required parameters are provided in the request body.
         if (!reference || !trxref || !username) {
             return res.status(400).json({ success: false, message: 'Reference, transaction reference, and username are required.' });
         }
@@ -969,25 +969,28 @@ export const paymentVerification = async (req, res) => {
         // Verify the payment with Paystack API.
         const paymentVerificationResponse = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
             headers: {
-                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`  // Provide Paystack secret key.
+                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`  // Provide Paystack secret key for authentication.
             }
         });
 
-        // Check if payment verification was successful.
+        // Check if the payment verification was successful.
         if (paymentVerificationResponse.data.status === true) {
-            // Find the user by the provided username.
-            const user = await User.findOne({ username });
+            const { amount } = paymentVerificationResponse.data.data; // Amount is in the smallest currency unit (e.g., kobo/cents).
+            const paidAmount = amount / 100;  // Convert to the main currency unit (e.g., NGN or USD).
 
-            // If the user isn't found, return a 404 response indicating the user does not exist.
-            if (!user) {
+            // Find the user by the provided username (the recipient of the payment).
+            const recipientUser = await User.findOne({ username });
+
+            // If the recipient user isn't found, return a 404 response indicating the user does not exist.
+            if (!recipientUser) {
                 return res.status(404).json({
                     success: false,
                     message: 'User not found.'
                 });
             }
 
-            // Find the promiseTitle containing the specific requestId.
-            const promiseTitle = user.promiseTitle.find(title =>
+            // Find the promiseTitle containing the specific requestId for the recipient user.
+            const promiseTitle = recipientUser.promiseTitle.find(title =>
                 title.requests.some(request => request.id.toString() === requestId.toString())
             );
 
@@ -999,19 +1002,37 @@ export const paymentVerification = async (req, res) => {
                 });
             }
 
-            // Find the specific request in the promiseTitle.requests array.
+            // Find the specific request in the promiseTitle.requests array for the recipient user.
             const request = promiseTitle.requests.find(req => req.id.toString() === requestId.toString());
 
-            // If the request is found, mark it as paid and save the user object.
+            // If the request is found, update its payment status to 'paid'.
             if (request) {
-                request.paid = true;  // Update the request payment status to 'paid'.
-                await user.save();  // Save the updated user object.
+                request.paid = true;  // Mark the request as paid.
+                await recipientUser.save();  // Save the updated recipient user object.
             }
 
-            // Return a success response notifying that the payment was successful and the request status was updated.
+            // Update the recipient user's wallet balance.
+            recipientUser.wallet.balance += paidAmount;  // Add the paid amount to the wallet balance.
+
+            // Save the updated recipient user object with the new wallet balance.
+            await recipientUser.save();
+
+            // Now, create a transaction record for the payer (person making the payment).
+            const transaction = {
+                userId: payerId,  // The userId of the payer (person making the payment)
+                amount: paidAmount,  // The amount paid into the wallet
+                description: `User ${username} has paid ${paidAmount} into your wallet.`,  // Description of the transaction
+                timestamp: new Date()  // The timestamp of the transaction
+            };
+
+            // Add the transaction to the recipient user's transaction history.
+            recipientUser.wallet.transactions.push(transaction);  // Link the transaction to the recipient's wallet.
+            await recipientUser.save();  // Save the updated recipient user object with the new transaction.
+
+            // Return a success response notifying that the payment was successful and the transaction recorded.
             return res.status(200).json({
                 success: true,
-                message: 'Payment successful! Request status updated.'
+                message: 'Payment successful! Request status updated, wallet balance credited, and transaction recorded.'
             });
         } else {
             // If payment verification fails, return a 400 response.
