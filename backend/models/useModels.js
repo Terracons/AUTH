@@ -81,21 +81,21 @@ const userSchema = new mongoose.Schema({
 
     wallet: {
         balance: {
-            type: Number,
-            default: 0
+          type: Number,
+          default: 0
         },
         currency: {
-            type: String,
-            default: 'NGN' 
+          type: String,
+          default: 'NGN'
         },
         transactions: [{
-            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to the user making the payment
-            amount: { type: Number, required: true },  // Amount of payment
-            description: { type: String, required: true },  // Transaction description
-            timestamp: { type: Date, default: Date.now }  // Transaction timestamp
+          userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to the payer user
+          amount: { type: Number, required: true },  // Payment amount
+          description: { type: String, required: true },  // Transaction description
+          timestamp: { type: Date, default: Date.now }  // Transaction timestamp
         }]
-        
-    }
+      }
+    
 
 }, { timestamps: true });
 
