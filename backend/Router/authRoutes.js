@@ -22,6 +22,7 @@ import {
     paymentGateway,
     paymentVerification,
     getEmail,
+    getWalletDetails,
    
    
 
@@ -52,6 +53,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post ("/paystack/payment", verifytoken, paymentGateway)
  router.post('/payment/verify', paymentVerification)
  router.get('/get-user-email', getEmail)
+ router.get ('/getWalletDetails', getWalletDetails)
 
 
 

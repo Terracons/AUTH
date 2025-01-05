@@ -1105,3 +1105,47 @@ export const getEmail = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+
+export const getWalletDetails = async (req, res) => {
+    // Extract the token from the Authorization header.
+    const token = req.headers['authorization']?.split(' ')[1];
+
+    // If the token is missing, return an error.
+    if (!token) {
+        return res.status(400).json({ success: false, message: 'Token is required in the Authorization header.' });
+    }
+
+    try {
+        // Decode the token to get the userId.
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.userId;
+
+        // Find the user by their userId.
+        const user = await User.findById(userId);
+
+        // If the user doesn't exist, return a 404 response.
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        // Retrieve wallet balance and transaction history.
+        const walletDetails = {
+            balance: user.wallet.balance,
+            transactions: user.wallet.transactions,
+        };
+
+        // Send the wallet details (balance and transactions) as a response.
+        return res.status(200).json({
+            success: true,
+            wallet: walletDetails,
+        });
+    } catch (error) {
+        // If an error occurs during the process, return a 500 error.
+        console.error('Error fetching wallet details:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching wallet details.',
+        });
+    }
+};
