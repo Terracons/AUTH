@@ -945,42 +945,40 @@ export const paymentGateway = async (req, res) => {
 
 
 export const paymentVerification = async (req, res) => {
-    // I extract the reference, trxref (transaction reference), and requestId from the request body.
-    const { reference, trxref, requestId } = req.body;
+    // Extract the necessary parameters from the request body.
+    const { reference, trxref, requestId, username } = req.body;
 
-    // I get the token from the Authorization header to authenticate the request.
-    const token = req.headers['authorization'].split(' ')[1];  // Extract the token from the header.
+    // Extract the token from the Authorization header for authentication.
+    const token = req.headers['authorization']?.split(' ')[1];  // Extract token from header (bearer token).
 
-    // If the token is missing, I send a 400 response informing the client that the token is required.
+    // If the token is missing, return a 400 response indicating the token is required.
     if (!token) {
         return res.status(400).json({ success: false, message: 'Token is required in the Authorization header.' });
     }
 
     try {
-        // I decode the JWT token to extract the userId for identification and access control.
+        // Decode the JWT token to extract the userId for authentication and access control.
         const decoded = jwt.verify(token, process.env.JWT_SECRET);  
-        const userId = decoded.userId;  // Extract the userId from the decoded token.
-        console.log(userId);
+        const userId = decoded.userId;  // We still extract userId for authorization purposes.
 
-        // Ensure that both the reference and trxref are provided in the request body.
-        // If not, I return a 400 response indicating which parameters are missing.
-        if (!reference || !trxref) {
-            return res.status(400).json({ success: false, message: 'Reference and transaction reference are required.' });
+        // Ensure that both reference and trxref are provided in the request body.
+        if (!reference || !trxref || !username) {
+            return res.status(400).json({ success: false, message: 'Reference, transaction reference, and username are required.' });
         }
 
-        // I now call Paystack's payment verification API to verify the payment status.
+        // Verify the payment with Paystack API.
         const paymentVerificationResponse = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
             headers: {
-                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`  // I pass the Paystack Secret Key for authorization.
+                'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`  // Provide Paystack secret key.
             }
         });
 
-        // If Paystack verifies that the payment was successful, I proceed to update the user's request status.
+        // Check if payment verification was successful.
         if (paymentVerificationResponse.data.status === true) {
-            // I find the user by userId, which I extracted earlier from the JWT token.
-            const user = await User.findById(userId);
+            // Find the user by the provided username.
+            const user = await User.findOne({ username });
 
-            // If the user isn't found in the database, I return a 404 response indicating that the user doesn't exist.
+            // If the user isn't found, return a 404 response indicating the user does not exist.
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -988,12 +986,12 @@ export const paymentVerification = async (req, res) => {
                 });
             }
 
-            // I find the promiseTitle in the user's data that contains the requestId.
+            // Find the promiseTitle containing the specific requestId.
             const promiseTitle = user.promiseTitle.find(title =>
                 title.requests.some(request => request.id.toString() === requestId.toString())
             );
 
-            // If the promiseTitle or the specific request isn't found, I send a 404 response with an appropriate message.
+            // If the promiseTitle or the specific request is not found, return a 404 response.
             if (!promiseTitle) {
                 return res.status(404).json({
                     success: false,
@@ -1001,38 +999,37 @@ export const paymentVerification = async (req, res) => {
                 });
             }
 
-            // I find the specific request within the promiseTitle.requests array.
+            // Find the specific request in the promiseTitle.requests array.
             const request = promiseTitle.requests.find(req => req.id.toString() === requestId.toString());
 
-            // If the request is found, I update its payment status to 'paid' and save the user object.
+            // If the request is found, mark it as paid and save the user object.
             if (request) {
-                request.paid = true;  // Mark the request as paid.
-                await user.save();  // Save the updated user object with the new payment status.
+                request.paid = true;  // Update the request payment status to 'paid'.
+                await user.save();  // Save the updated user object.
             }
 
-            // I return a success response to notify the client that the payment was successful and the request status was updated.
+            // Return a success response notifying that the payment was successful and the request status was updated.
             return res.status(200).json({
                 success: true,
                 message: 'Payment successful! Request status updated.'
             });
         } else {
-            // If the payment verification fails, I send a 400 response indicating the failure.
+            // If payment verification fails, return a 400 response.
             return res.status(400).json({
                 success: false,
-                message: 'Payment verification failed.'  // Inform the client that the payment couldn't be verified.
+                message: 'Payment verification failed.'
             });
         }
     } catch (error) {
-        // If there's an error during the process (e.g., network error, token verification failure), I catch it here.
+        // Catch any errors during the process and return a 500 response.
         console.error('Error verifying payment:', error);
-
-        // I return a 500 response to notify the client that there was a server-side error.
         return res.status(500).json({
             success: false,
-            message: 'Error verifying payment.'  // Provide a generic error message for troubleshooting.
+            message: 'Error verifying payment.'
         });
     }
 };
+
 
 export const getEmail = async (req, res) => {
     try {
