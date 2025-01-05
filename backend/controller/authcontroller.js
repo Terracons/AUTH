@@ -1029,7 +1029,7 @@ export const paymentVerification = async (req, res) => {
 
             // Now, create a transaction record for the payer (person making the payment).
             const transaction = {
-                username: payeeName,  // The userId of the payer (person making the payment)
+                payee: payeeName,  // The userId of the payer (person making the payment)
                 amount: paidAmount,  // The amount paid into the wallet
                 description: `User ${username} has paid ${paidAmount} into your wallet.`,  // Description of the transaction
                 timestamp: new Date()  // The timestamp of the transaction
