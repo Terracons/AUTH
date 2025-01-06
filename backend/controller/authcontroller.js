@@ -1109,11 +1109,11 @@ export const getWalletDetails = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
 
-        // Retrieve wallet balance and transaction history.
+        
         const walletDetails = {
             balance: user.wallet.balance,
             transactions: user.wallet.transactions,
-            Transaction_ID : []
+           
         };
 
         // Send the wallet details (balance and transactions) as a response.
