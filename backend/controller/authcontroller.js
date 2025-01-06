@@ -1009,7 +1009,7 @@ export const paymentVerification = async (req, res) => {
                 payee: payerName,
                 amount: paidAmount,
                 description: `${payerName} has paid ${paidAmount} into your wallet.`,
-                reference,
+                Transaction_ID: reference,
                 timestamp: new Date()
             });
 
