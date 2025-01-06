@@ -1113,6 +1113,7 @@ export const getWalletDetails = async (req, res) => {
         const walletDetails = {
             balance: user.wallet.balance,
             transactions: user.wallet.transactions,
+            
         };
 
         // Send the wallet details (balance and transactions) as a response.

@@ -92,7 +92,9 @@ const userSchema = new mongoose.Schema({
           userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to the payer user
           amount: { type: Number, required: true },  // Payment amount
           description: { type: String, required: true },  // Transaction description
-          timestamp: { type: Date, default: Date.now }  // Transaction timestamp
+          timestamp: { type: Date, default: Date.now },  // Transaction timestamp
+          Transaction_ID : { type: String, required: true },
+        
         }]
       }
     
