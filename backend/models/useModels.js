@@ -58,15 +58,6 @@ const userSchema = new mongoose.Schema({
         }],
         timestamp: { type: Date, default: Date.now },
         shareToken: { type: String, required: false },
-        clicks: {
-            desktop: { type: Number, default: 0 },
-            android: { type: Number, default: 0 },
-            ios: { type: Number, default: 0 },
-            tablet: { type: Number, default: 0 }
-        },
-        shares: { type: Number, default: 0 },
-        requestsCreated: { type: Number, default: 0 },
-        requestsDeleted: { type: Number, default: 0 }
     }],
 
     promiseDescription: [{

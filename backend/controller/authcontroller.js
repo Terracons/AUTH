@@ -666,13 +666,14 @@ export const sharePromise = async (req, res) => {
 
         // Once the share token is saved, I construct the shareable link that will be used for sharing.
         // The share link will point to the specific promise gift page using the promiseTitleId.
-        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}`;
+        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}?shareToken=${shareToken}`;
 
         // Finally, I return a success response to the client with the generated shareable link.
         return res.status(200).json({
             success: true,
             message: "Shareable link generated successfully.",
-            shareLink: shareLink, 
+            shareLink: shareLink,
+            shareToken : shareToken
         });
     } catch (error) {
         // If any error occurs during the process, I log it for debugging and send a server error response.
@@ -1168,5 +1169,80 @@ export const ValidateACctDetails =  async (req, res) => {
         console.log(error);
         
         return res.status(500).json({ message: 'An error occurred while validating the account', error: error.message });
+    }
+};
+
+
+
+export const trackShareLink = async (req, res) => {
+    const { promiseTitleId } = req.params;
+    const { shareToken } = req.query; // Get share token from the query params
+
+    try {
+        // Find the user and the promiseTitle by shareToken
+        const user = await User.findOne({ "promiseTitle.shareToken": shareToken });
+        
+        if (!user) {
+            return res.status(404).json({ message: "User or Promise not found." });
+        }
+
+        // Find the promiseTitle associated with the share token
+        const promise = user.promiseTitle.find(p => p.shareToken === shareToken);
+        
+        if (!promise) {
+            return res.status(404).json({ message: "Promise not found." });
+        }
+
+        // Track the access
+        const analyticsData = {
+            accessedAt: new Date(),
+            userAgent: req.get('User-Agent'),
+            ipAddress: req.ip, // Express automatically gets the IP
+            referralSource: req.get('Referer') || 'Direct',
+            accessedBy: req.user ? req.user._id : null // Optionally, track the user who accessed the link (if authenticated)
+        };
+
+        // Save analytics data in the shareAnalytics array of the specific promise
+        promise.shareAnalytics.push(analyticsData);
+        await user.save(); // Save the updated user document with the new analytics data
+
+        return res.status(200).json({
+            success: true,
+            message: 'Share link accessed and analytics recorded.',
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error. Could not track analytics.' });
+    }
+};
+
+
+
+export const getShareLinkAnalytics = async (req, res) => {
+    const { promiseTitleId } = req.params;
+
+    try {
+        const user = await User.findOne({ "promiseTitle._id": promiseTitleId });
+        
+        if (!user) {
+            return res.status(404).json({ message: "User or Promise not found." });
+        }
+
+        const promise = user.promiseTitle.id(promiseTitleId);  // Find the specific promiseTitle
+        
+        if (!promise) {
+            return res.status(404).json({ message: "Promise not found." });
+        }
+
+        const analytics = promise.shareAnalytics;
+
+        return res.status(200).json({
+            success: true,
+            accessCount: analytics.length,
+            accessData: analytics,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error. Could not retrieve analytics.' });
     }
 };
