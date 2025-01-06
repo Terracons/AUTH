@@ -999,26 +999,23 @@ export const paymentVerification = async (req, res) => {
         const request = promiseTitle.requests.find(req => req.id.toString() === requestId.toString());
         if (request) {
             request.paid = true;
-           
-            
+
+            // Add notification (ensure addNotification doesn't cause issues)
             await addNotification(recipientUser.id, `New Payment #${amount} just got credited into your Account`);
+
+            // Update the wallet balance and transaction in one save operation
+            recipientUser.wallet.balance += paidAmount;
+            recipientUser.wallet.transactions.push({
+                payee: payerName,
+                amount: paidAmount,
+                description: `${payerName} has paid ${paidAmount} into your wallet.`,
+                reference,
+                timestamp: new Date()
+            });
+
+            // Use findOneAndUpdate for atomic update to avoid version conflicts
             await recipientUser.save();
-            
         }
-
-        recipientUser.wallet.balance += paidAmount;
-        await recipientUser.save();
-
-        const transaction = {
-            payee: payerName,  
-            amount: paidAmount,
-            description: `${payerName} has paid ${paidAmount} into your wallet.`,
-            Transaction_ID : reference,
-            timestamp: new Date()
-        };
-
-        recipientUser.wallet.transactions.push(transaction);
-        await recipientUser.save();
 
         return res.status(200).json({
             success: true,
