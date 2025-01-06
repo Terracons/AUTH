@@ -999,7 +999,11 @@ export const paymentVerification = async (req, res) => {
         const request = promiseTitle.requests.find(req => req.id.toString() === requestId.toString());
         if (request) {
             request.paid = true;
+           
+            
+            await addNotification(recipientUser.id, `New Payment #${amount} just got credited into your Account`);
             await recipientUser.save();
+            
         }
 
         recipientUser.wallet.balance += paidAmount;
@@ -1123,5 +1127,48 @@ export const getWalletDetails = async (req, res) => {
             success: false,
             message: 'Error fetching wallet details.',
         });
+    }
+};
+
+
+
+export const ValidateACctDetails =  async (req, res) => {
+    const { account_number, bank_code } = req.body;
+
+    // Ensure the required parameters are provided
+    if (!account_number || !bank_code) {
+        return res.status(400).json({ message: 'Account number and bank code are required' });
+    }
+
+    try {
+        // Send the request to Paystack API
+        const response = await axios.post(
+            'https://api.paystack.co/transaction/validate_account_number',
+            { account_number, bank_code },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        // Check if Paystack's response is successful
+        if (response.data.status) {
+            // Valid account details
+            return res.status(200).json({
+                message: 'Account validated successfully',
+                bank_name: response.data.data.bank_name,
+                account_number: response.data.data.account_number,
+                account_name: response.data.data.account_name,
+            });
+        } else {
+            // Invalid account details
+            return res.status(400).json({ message: 'Invalid account number or bank code' });
+        }
+    } catch (error) {
+        console.log(error);
+        
+        return res.status(500).json({ message: 'An error occurred while validating the account', error: error.message });
     }
 };

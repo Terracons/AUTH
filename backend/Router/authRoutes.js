@@ -23,6 +23,7 @@ import {
     paymentVerification,
     getEmail,
     getWalletDetails,
+    ValidateACctDetails,
    
    
 
@@ -54,6 +55,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post('/payment/verify', paymentVerification)
  router.get('/get-user-email', getEmail)
  router.get ('/getWalletDetails', getWalletDetails)
+ router.post('/validate', ValidateACctDetails)
 
 
 
