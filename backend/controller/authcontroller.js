@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken"
 import axios from "axios"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
-import useragent from "useragent"
+import useragent from 'useragent';
 import requestIp  from "request-ip"
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; 
@@ -1178,82 +1178,69 @@ export const ValidateACctDetails =  async (req, res) => {
 };
 
 
-export const trackShareLink = async (req, res) => {
-    const { shareToken } = req.params;
+export const trackShareAnalytics = async (req, res) => {
+    const { promiseTitleId, shareToken } = req.params;
 
     try {
-        // Find the user by shareToken
+        // 1. Retrieve the user and the specific promise associated with the shareToken
         const user = await User.findOne({ "promiseTitle.shareToken": shareToken });
 
         if (!user) {
-            return res.status(404).json({ message: "User or Promise not found." });
+            return res.status(404).json({ message: "User not found!!!" });
         }
 
-        // Find the promiseTitle associated with the share token
-        const promise = Array.isArray(user.promiseTitle) ? user.promiseTitle.find(p => p.shareToken === shareToken) : null;
+        const promise = user.promiseTitle.find(p => p.shareToken === shareToken);
+
         if (!promise) {
             return res.status(404).json({ message: "Promise not found." });
         }
 
-        // Get the real client IP address
-        const ipAddress = requestIp.getClientIp(req); 
+        // 2. Capture user-agent details
+        const agent = useragent.parse(req.headers['user-agent']);
+        const os = agent.os;
+        const deviceType = agent.device.toString();
+        const phoneBrand = agent.device.family;
 
-        // Get the user agent and parse it for detailed information
-        const userAgent = req.get('User-Agent');
-        const agent = useragent.parse(userAgent);
+        // 3. Capture the IP address and retrieve additional info using an API
+        const ip = req.ip;
+        const ipDetails = await axios.get(`http://ip-api.com/json/${ip}`);
+        const { city, country, isp } = ipDetails.data;
 
-        // Collect user agent data
-        const deviceDetails = {
-            phoneBrand: agent.device || 'Unknown',
-            os: agent.os,
-            browser: agent.toString(),
-            isMobile: agent.isMobile,
-            isTablet: agent.isTablet,
-            isDesktop: agent.isDesktop
-        };
-
-        // Track the access
-        const analyticsData = {
-            accessedAt: new Date(),
-            userAgentDetails: deviceDetails,
-            ipAddress: ipAddress,
-            referralSource: req.get('Referer') || 'Direct',
-            accessedBy: req.user ? req.user._id : null,
-        };
-
-        // Ensure osCounts and phoneBrandCounts are objects
-        promise.osCounts = promise.osCounts || {};
-        promise.phoneBrandCounts = promise.phoneBrandCounts || {};
-
-        // Track OS-specific counts
-        const os = deviceDetails.os || '';
-        if (os.includes("Android")) {
-            promise.osCounts.android = (promise.osCounts.android || 0) + 1;
-        } else if (os.includes("iOS")) {
-            promise.osCounts.ios = (promise.osCounts.ios || 0) + 1;
-        } else if (deviceDetails.isDesktop) {
-            promise.osCounts.desktop = (promise.osCounts.desktop || 0) + 1;
-        } else if (deviceDetails.isTablet) {
-            promise.osCounts.tablet = (promise.osCounts.tablet || 0) + 1;
+        // 4. Determine the device category
+        let deviceCategory = 'desktop';  // Default to desktop
+        if (deviceType.toLowerCase().includes('tablet')) {
+            deviceCategory = 'tablet';
+        } else if (deviceType.toLowerCase().includes('phone')) {
+            deviceCategory = 'phone';
+        } else if (deviceType.toLowerCase().includes('laptop')) {
+            deviceCategory = 'laptop';
         }
 
-        // Track phone brand count
-        const phoneBrand = deviceDetails.phoneBrand || 'Unknown';
-        promise.phoneBrandCounts[phoneBrand] = (promise.phoneBrandCounts[phoneBrand] || 0) + 1;
+        // 5. Prepare the analytics object
+        const analyticsData = {
+            os,
+            deviceType,
+            phoneBrand,
+            ip,
+            city,
+            country,
+            isp,
+            deviceCategory
+        };
 
-        // Save analytics data
+        // 6. Store the analytics in the shareAnalytics field
         promise.shareAnalytics.push(analyticsData);
-        await user.save(); 
+        await user.save();
 
-        return res.status(200).json({
-            success: true,
-            message: 'Share link accessed and analytics recorded.',
-        });
+        // 7. Return a response with the promise or further redirect the user
+        return res.status(200).json({ message: "Analytics captured successfully" });
+
     } catch (error) {
-        console.error('Error details:', error);
-        return res.status(500).json({ message: 'Server error. Could not track analytics.' });
+        console.error(error);
+        return res.status(500).json({ message: "Error capturing analytics" });
     }
 };
+
 
 
 

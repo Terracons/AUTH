@@ -58,14 +58,17 @@ const userSchema = new mongoose.Schema({
         }],
         timestamp: { type: Date, default: Date.now },
         shareToken: { type: String, required: false },
-        shareAnalytics : [],
-        osCounts: {
-            android: { type: Number, default: 0 },
-            ios: { type: Number, default: 0 },
-            desktop: { type: Number, default: 0 },
-            tablet: { type: Number, default: 0 }
-        },
-        phoneBrandCounts: { type: Map, of: Number, default: {} },
+        shareAnalytics: [{
+            os: { type: String },  // Operating System (e.g., 'Windows', 'MacOS')
+            deviceType: { type: String },  // Device type (e.g., 'phone', 'tablet', 'desktop')
+            phoneBrand: { type: String },  // Phone brand (e.g., 'Apple', 'Samsung')
+            ip: { type: String },  // IP address of the user accessing the link
+            city: { type: String },  // City based on IP lookup
+            country: { type: String },  // Country based on IP lookup
+            isp: { type: String },  // ISP based on IP lookup
+            deviceCategory: { type: String },  // 'phone', 'tablet', 'desktop', 'laptop'
+            timestamp: { type: Date, default: Date.now }  // Timestamp of the access
+        }]
     }],
 
     promiseDescription: [{
@@ -93,11 +96,8 @@ const userSchema = new mongoose.Schema({
           description: { type: String, required: true },  // Transaction description
           timestamp: { type: Date, default: Date.now },  // Transaction timestamp
           Transaction_ID : { type: String, required: false },
-        
         }]
       }
-    
-
 }, { timestamps: true });
 
 export const User = mongoose.model('User', userSchema);
