@@ -59,8 +59,13 @@ const userSchema = new mongoose.Schema({
         timestamp: { type: Date, default: Date.now },
         shareToken: { type: String, required: false },
         shareAnalytics : [],
-        osCounts :  { type: Number, default: Date.now },
-        phoneBrandCounts : { type: Number, default: Date.now }
+        osCounts: {
+            android: { type: Number, default: 0 },
+            ios: { type: Number, default: 0 },
+            desktop: { type: Number, default: 0 },
+            tablet: { type: Number, default: 0 }
+        },
+        phoneBrandCounts: { type: Map, of: Number, default: {} },
     }],
 
     promiseDescription: [{

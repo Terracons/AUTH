@@ -1226,9 +1226,10 @@ export const trackShareLink = async (req, res) => {
 
         // Track OS-specific counts
         if (promise.osCounts) {
-            if (deviceDetails.os && deviceDetails.os.includes("Android")) {
+            const os = deviceDetails.os ? String(deviceDetails.os) : ''; // Ensure os is a string
+            if (os.includes("Android")) {
                 promise.osCounts.android = (promise.osCounts.android || 0) + 1;
-            } else if (deviceDetails.os && deviceDetails.os.includes("iOS")) {
+            } else if (os.includes("iOS")) {
                 promise.osCounts.ios = (promise.osCounts.ios || 0) + 1;
             } else if (deviceDetails.isDesktop) {
                 promise.osCounts.desktop = (promise.osCounts.desktop || 0) + 1;
@@ -1236,9 +1237,10 @@ export const trackShareLink = async (req, res) => {
                 promise.osCounts.tablet = (promise.osCounts.tablet || 0) + 1;
             }
         } else {
+            const os = deviceDetails.os ? String(deviceDetails.os) : ''; // Ensure os is a string
             promise.osCounts = {
-                android: deviceDetails.os && deviceDetails.os.includes("Android") ? 1 : 0,
-                ios: deviceDetails.os && deviceDetails.os.includes("iOS") ? 1 : 0,
+                android: os.includes("Android") ? 1 : 0,
+                ios: os.includes("iOS") ? 1 : 0,
                 desktop: deviceDetails.isDesktop ? 1 : 0,
                 tablet: deviceDetails.isTablet ? 1 : 0
             };
@@ -1246,9 +1248,18 @@ export const trackShareLink = async (req, res) => {
 
         // Track the phone brand count
         if (promise.phoneBrandCounts) {
-            promise.phoneBrandCounts[deviceDetails.phoneBrand] = (promise.phoneBrandCounts[deviceDetails.phoneBrand] || 0) + 1;
+            // Ensure phoneBrand is a valid string, and handle any invalid or unexpected values
+            const phoneBrand = deviceDetails.phoneBrand && typeof deviceDetails.phoneBrand === 'string' 
+                                ? deviceDetails.phoneBrand 
+                                : 'Unknown'; // Default to 'Unknown' if invalid
+
+            promise.phoneBrandCounts[phoneBrand] = (promise.phoneBrandCounts[phoneBrand] || 0) + 1;
         } else {
-            promise.phoneBrandCounts = { [deviceDetails.phoneBrand]: 1 };
+            const phoneBrand = deviceDetails.phoneBrand && typeof deviceDetails.phoneBrand === 'string' 
+                                ? deviceDetails.phoneBrand 
+                                : 'Unknown'; // Default to 'Unknown' if invalid
+
+            promise.phoneBrandCounts = { [phoneBrand]: 1 };
         }
 
         // Save analytics data in the shareAnalytics array of the specific promise
@@ -1264,6 +1275,8 @@ export const trackShareLink = async (req, res) => {
         return res.status(500).json({ message: 'Server error. Could not track analytics.' });
     }
 };
+
+
 
 
 export const getShareLinkAnalytics = async (req, res) => {
