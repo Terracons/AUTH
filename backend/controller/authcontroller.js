@@ -1222,7 +1222,7 @@ export const trackShareLink = async (req, res) => {
             ipAddress: ipAddress,  // Store the real IP address
             referralSource: req.get('Referer') || 'Direct',
             accessedBy: req.user ? req.user._id : null,
-            deviceDetails : deviceDetails
+          
         };
 
         // Save analytics data in the shareAnalytics array of the specific promise
