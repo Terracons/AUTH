@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken"
 import axios from "axios"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
+import useragent from "useragent"
+import requestIp  from "request-ip"
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; 
 
@@ -1176,39 +1178,51 @@ export const ValidateACctDetails =  async (req, res) => {
 };
 
 
-
 export const trackShareLink = async (req, res) => {
     const { promiseTitleId } = req.params;
-    const { shareToken } = req.body; 
+    const { shareToken } = req.body;
 
     try {
         // Find the user and the promiseTitle by shareToken
         const user = await User.findOne({ "promiseTitle.shareToken": shareToken });
-        
+
         if (!user) {
             return res.status(404).json({ message: "User or Promise not found." });
         }
 
         // Find the promiseTitle associated with the share token
         const promise = user.promiseTitle.find(p => p.shareToken === shareToken);
-        
+
         if (!promise) {
             return res.status(404).json({ message: "Promise not found." });
         }
 
-        // Get the correct IP address
-        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        // Get the real client IP address using request-ip
+        const ipAddress = requestIp.getClientIp(req);  // Automatically handles forwarded-for headers and connection remote address
 
-        // Get the user agent (you can modify this if you need a more specific check)
+        // Get the user agent and parse it for detailed information
         const userAgent = req.get('User-Agent');
+        const agent = useragent.parse(userAgent);
+
+        // Collect user agent data: phone brand, device type, OS, etc.
+        const deviceDetails = {
+            phoneBrand: agent.device || 'Unknown',
+            os: agent.os,
+            browser: agent.toString(),
+            deviceType: agent.device || 'Unknown',
+            isMobile: agent.isMobile,
+            isTablet: agent.isTablet,
+            isDesktop: agent.isDesktop
+        };
 
         // Track the access
         const analyticsData = {
             accessedAt: new Date(),
-            userAgent: userAgent,  // You could validate or modify this value further if needed
-            ipAddress: ipAddress,  // IP address might now be correctly resolved
+            userAgentDetails: deviceDetails,  // Store detailed user agent info
+            ipAddress: ipAddress,  // Store the real IP address
             referralSource: req.get('Referer') || 'Direct',
-            accessedBy: req.user ? req.user._id : null 
+            accessedBy: req.user ? req.user._id : null,
+            deviceDetails : deviceDetails
         };
 
         // Save analytics data in the shareAnalytics array of the specific promise
@@ -1224,7 +1238,6 @@ export const trackShareLink = async (req, res) => {
         return res.status(500).json({ message: 'Server error. Could not track analytics.' });
     }
 };
-
 
 export const getShareLinkAnalytics = async (req, res) => {
     const { promiseTitleId } = req.params;
