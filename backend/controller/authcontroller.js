@@ -1233,7 +1233,9 @@ export const trackShareAnalytics = async (req, res) => {
         await user.save();
 
         // 7. Return a response with the promise or further redirect the user
-        return res.status(200).json({ message: "Analytics captured successfully" });
+        return res.status(200).json({ message: "Analytics captured successfully",
+            success: true,
+         });
 
     } catch (error) {
         console.error(error);
