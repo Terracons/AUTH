@@ -654,7 +654,8 @@ export const sharePromise = async (req, res) => {
         // If the promise is not found within the user's list, I return a 404 error indicating the promise is missing.
         if (!promise) {
             return res.status(404).json({ message: "Promise not found." });
-        }
+        } 
+        
 
         // At this point, I generate a unique share token to create a shareable link for the promise.
         // This will allow others to access the promise via the generated link.
