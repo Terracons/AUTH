@@ -1222,8 +1222,34 @@ export const trackShareLink = async (req, res) => {
             ipAddress: ipAddress,  // Store the real IP address
             referralSource: req.get('Referer') || 'Direct',
             accessedBy: req.user ? req.user._id : null,
-          
         };
+
+        // Track OS-specific counts
+        if (promise.osCounts) {
+            if (deviceDetails.os && deviceDetails.os.includes("Android")) {
+                promise.osCounts.android = (promise.osCounts.android || 0) + 1;
+            } else if (deviceDetails.os && deviceDetails.os.includes("iOS")) {
+                promise.osCounts.ios = (promise.osCounts.ios || 0) + 1;
+            } else if (deviceDetails.isDesktop) {
+                promise.osCounts.desktop = (promise.osCounts.desktop || 0) + 1;
+            } else if (deviceDetails.isTablet) {
+                promise.osCounts.tablet = (promise.osCounts.tablet || 0) + 1;
+            }
+        } else {
+            promise.osCounts = {
+                android: deviceDetails.os && deviceDetails.os.includes("Android") ? 1 : 0,
+                ios: deviceDetails.os && deviceDetails.os.includes("iOS") ? 1 : 0,
+                desktop: deviceDetails.isDesktop ? 1 : 0,
+                tablet: deviceDetails.isTablet ? 1 : 0
+            };
+        }
+
+        // Track the phone brand count
+        if (promise.phoneBrandCounts) {
+            promise.phoneBrandCounts[deviceDetails.phoneBrand] = (promise.phoneBrandCounts[deviceDetails.phoneBrand] || 0) + 1;
+        } else {
+            promise.phoneBrandCounts = { [deviceDetails.phoneBrand]: 1 };
+        }
 
         // Save analytics data in the shareAnalytics array of the specific promise
         promise.shareAnalytics.push(analyticsData);
@@ -1238,6 +1264,7 @@ export const trackShareLink = async (req, res) => {
         return res.status(500).json({ message: 'Server error. Could not track analytics.' });
     }
 };
+
 
 export const getShareLinkAnalytics = async (req, res) => {
     const { promiseTitleId } = req.params;
