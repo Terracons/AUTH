@@ -1179,11 +1179,10 @@ export const ValidateACctDetails =  async (req, res) => {
 
 
 export const trackShareLink = async (req, res) => {
-    // const { promiseTitleId } = req.params;
     const { shareToken } = req.params;
 
     try {
-        // Find the user and the promiseTitle by shareToken
+        // Find the user by shareToken
         const user = await User.findOne({ "promiseTitle.shareToken": shareToken });
 
         if (!user) {
@@ -1191,25 +1190,23 @@ export const trackShareLink = async (req, res) => {
         }
 
         // Find the promiseTitle associated with the share token
-        const promise = user.promiseTitle.find(p => p.shareToken === shareToken);
-
+        const promise = Array.isArray(user.promiseTitle) ? user.promiseTitle.find(p => p.shareToken === shareToken) : null;
         if (!promise) {
             return res.status(404).json({ message: "Promise not found." });
         }
 
-        // Get the real client IP address using request-ip
-        const ipAddress = requestIp.getClientIp(req);  // Automatically handles forwarded-for headers and connection remote address
+        // Get the real client IP address
+        const ipAddress = requestIp.getClientIp(req); 
 
         // Get the user agent and parse it for detailed information
         const userAgent = req.get('User-Agent');
         const agent = useragent.parse(userAgent);
 
-        // Collect user agent data: phone brand, device type, OS, etc.
+        // Collect user agent data
         const deviceDetails = {
             phoneBrand: agent.device || 'Unknown',
             os: agent.os,
             browser: agent.toString(),
-            deviceType: agent.device || 'Unknown',
             isMobile: agent.isMobile,
             isTablet: agent.isTablet,
             isDesktop: agent.isDesktop
@@ -1218,64 +1215,45 @@ export const trackShareLink = async (req, res) => {
         // Track the access
         const analyticsData = {
             accessedAt: new Date(),
-            userAgentDetails: deviceDetails,  // Store detailed user agent info
-            ipAddress: ipAddress,  // Store the real IP address
+            userAgentDetails: deviceDetails,
+            ipAddress: ipAddress,
             referralSource: req.get('Referer') || 'Direct',
             accessedBy: req.user ? req.user._id : null,
         };
 
+        // Ensure osCounts and phoneBrandCounts are objects
+        promise.osCounts = promise.osCounts || {};
+        promise.phoneBrandCounts = promise.phoneBrandCounts || {};
+
         // Track OS-specific counts
-        if (promise.osCounts) {
-            const os = deviceDetails.os ? String(deviceDetails.os) : ''; // Ensure os is a string
-            if (os.includes("Android")) {
-                promise.osCounts.android = (promise.osCounts.android || 0) + 1;
-            } else if (os.includes("iOS")) {
-                promise.osCounts.ios = (promise.osCounts.ios || 0) + 1;
-            } else if (deviceDetails.isDesktop) {
-                promise.osCounts.desktop = (promise.osCounts.desktop || 0) + 1;
-            } else if (deviceDetails.isTablet) {
-                promise.osCounts.tablet = (promise.osCounts.tablet || 0) + 1;
-            }
-        } else {
-            const os = deviceDetails.os ? String(deviceDetails.os) : ''; // Ensure os is a string
-            promise.osCounts = {
-                android: os.includes("Android") ? 1 : 0,
-                ios: os.includes("iOS") ? 1 : 0,
-                desktop: deviceDetails.isDesktop ? 1 : 0,
-                tablet: deviceDetails.isTablet ? 1 : 0
-            };
+        const os = deviceDetails.os || '';
+        if (os.includes("Android")) {
+            promise.osCounts.android = (promise.osCounts.android || 0) + 1;
+        } else if (os.includes("iOS")) {
+            promise.osCounts.ios = (promise.osCounts.ios || 0) + 1;
+        } else if (deviceDetails.isDesktop) {
+            promise.osCounts.desktop = (promise.osCounts.desktop || 0) + 1;
+        } else if (deviceDetails.isTablet) {
+            promise.osCounts.tablet = (promise.osCounts.tablet || 0) + 1;
         }
 
-        // Track the phone brand count
-        if (promise.phoneBrandCounts) {
-            // Ensure phoneBrand is a valid string, and handle any invalid or unexpected values
-            const phoneBrand = deviceDetails.phoneBrand && typeof deviceDetails.phoneBrand === 'string' 
-                                ? deviceDetails.phoneBrand 
-                                : 'Unknown'; // Default to 'Unknown' if invalid
+        // Track phone brand count
+        const phoneBrand = deviceDetails.phoneBrand || 'Unknown';
+        promise.phoneBrandCounts[phoneBrand] = (promise.phoneBrandCounts[phoneBrand] || 0) + 1;
 
-            promise.phoneBrandCounts[phoneBrand] = (promise.phoneBrandCounts[phoneBrand] || 0) + 1;
-        } else {
-            const phoneBrand = deviceDetails.phoneBrand && typeof deviceDetails.phoneBrand === 'string' 
-                                ? deviceDetails.phoneBrand 
-                                : 'Unknown'; // Default to 'Unknown' if invalid
-
-            promise.phoneBrandCounts = { [phoneBrand]: 1 };
-        }
-
-        // Save analytics data in the shareAnalytics array of the specific promise
+        // Save analytics data
         promise.shareAnalytics.push(analyticsData);
-        await user.save(); // Save the updated user document with the new analytics data
+        await user.save(); 
 
         return res.status(200).json({
             success: true,
             message: 'Share link accessed and analytics recorded.',
         });
     } catch (error) {
-        console.error(error);
+        console.error('Error details:', error);
         return res.status(500).json({ message: 'Server error. Could not track analytics.' });
     }
 };
-
 
 
 
