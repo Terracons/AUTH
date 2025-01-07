@@ -655,7 +655,7 @@ export const sharePromise = async (req, res) => {
         if (!promise) {
             return res.status(404).json({ message: "Promise not found." });
         } 
-        
+
 
         // At this point, I generate a unique share token to create a shareable link for the promise.
         // This will allow others to access the promise via the generated link.
@@ -687,6 +687,7 @@ export const sharePromise = async (req, res) => {
 
 export const getPromiseDetailsById = async (req, res) => {
     const { promiseTitleId } = req.params; // Extract the promiseTitleId from the URL parameters.
+    const {shareToken} = req.query
 
     try {
         // Search for the user who has the promise associated with the promiseTitleId.
@@ -712,6 +713,7 @@ export const getPromiseDetailsById = async (req, res) => {
                 title: promise.title,
                 description: promise.description,
                 requests: promise.requests,
+                shareToken : shareToken
             },
             username: user.username // Include the username here.
         });
