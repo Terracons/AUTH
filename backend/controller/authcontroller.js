@@ -1196,13 +1196,19 @@ export const trackShareLink = async (req, res) => {
             return res.status(404).json({ message: "Promise not found." });
         }
 
+        // Get the correct IP address
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+        // Get the user agent (you can modify this if you need a more specific check)
+        const userAgent = req.get('User-Agent');
+
         // Track the access
         const analyticsData = {
             accessedAt: new Date(),
-            userAgent: req.get('User-Agent'),
-            ipAddress: req.ip, // Express automatically gets the IP
+            userAgent: userAgent,  // You could validate or modify this value further if needed
+            ipAddress: ipAddress,  // IP address might now be correctly resolved
             referralSource: req.get('Referer') || 'Direct',
-            accessedBy: req.user ? req.user._id : null // Optionally, track the user who accessed the link (if authenticated)
+            accessedBy: req.user ? req.user._id : null 
         };
 
         // Save analytics data in the shareAnalytics array of the specific promise
@@ -1218,7 +1224,6 @@ export const trackShareLink = async (req, res) => {
         return res.status(500).json({ message: 'Server error. Could not track analytics.' });
     }
 };
-
 
 
 export const getShareLinkAnalytics = async (req, res) => {
