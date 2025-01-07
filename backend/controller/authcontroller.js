@@ -1004,6 +1004,14 @@ export const paymentVerification = async (req, res) => {
 
         const request = promiseTitle.requests.find(req => req.id.toString() === requestId.toString());
         if (request) {
+            if (request.paid) {
+                // If the request is already paid, skip processing
+                return res.status(200).json({
+                    success: true,
+                    message: 'Payment already processed for this request.'
+                });
+            }
+
             request.paid = true;
 
             // Add notification (ensure addNotification doesn't cause issues)
@@ -1032,6 +1040,7 @@ export const paymentVerification = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
+
 
 
 
