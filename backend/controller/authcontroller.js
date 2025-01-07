@@ -669,7 +669,7 @@ export const sharePromise = async (req, res) => {
 
         // Once the share token is saved, I construct the shareable link that will be used for sharing.
         // The share link will point to the specific promise gift page using the promiseTitleId.
-        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}?${shareToken}`;
+        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}/${shareToken}`;
 
         // Finally, I return a success response to the client with the generated shareable link.
         return res.status(200).json({
@@ -1179,8 +1179,8 @@ export const ValidateACctDetails =  async (req, res) => {
 
 
 export const trackShareLink = async (req, res) => {
-    const { promiseTitleId } = req.params;
-    const { shareToken } = req.body;
+    // const { promiseTitleId } = req.params;
+    const { shareToken } = req.params;
 
     try {
         // Find the user and the promiseTitle by shareToken
@@ -1272,7 +1272,7 @@ export const trackShareLink = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return error
+        return res.status(500).json({ message: 'Server error. Could not track analytics.' });
     }
 };
 
