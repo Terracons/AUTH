@@ -1179,7 +1179,7 @@ export const ValidateACctDetails =  async (req, res) => {
 
 export const trackShareLink = async (req, res) => {
     const { promiseTitleId } = req.params;
-    const { shareToken } = req.query; // Get share token from the query params
+    const { shareToken } = req.body; 
 
     try {
         // Find the user and the promiseTitle by shareToken
