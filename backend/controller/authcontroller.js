@@ -687,7 +687,7 @@ export const sharePromise = async (req, res) => {
 
 export const getPromiseDetailsById = async (req, res) => {
     const { promiseTitleId } = req.params; // Extract the promiseTitleId from the URL parameters.
-    const {shareToken} = req.query
+    // const {shareToken} = req.query
 
     try {
         // Search for the user who has the promise associated with the promiseTitleId.
@@ -713,7 +713,7 @@ export const getPromiseDetailsById = async (req, res) => {
                 title: promise.title,
                 description: promise.description,
                 requests: promise.requests,
-                shareToken : shareToken
+                shareToken : promise.shareToken
             },
             username: user.username // Include the username here.
         });
