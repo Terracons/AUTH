@@ -1007,7 +1007,7 @@ export const paymentVerification = async (req, res) => {
             request.paid = true;
 
             // Add notification (ensure addNotification doesn't cause issues)
-            await addNotification(recipientUser.id, `New Payment just got credited into your Account`);
+            await addNotification(recipientUser.id, `New Payment #${paidAmount} just got credited into your Account`);
 
             // Update the wallet balance and transaction in one save operation
             recipientUser.wallet.balance += paidAmount;
