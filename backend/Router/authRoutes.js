@@ -24,8 +24,8 @@ import {
     getEmail,
     getWalletDetails,
     ValidateACctDetails,
-    getShareLinkAnalytics,
     trackShareAnalytics,
+    getShareAnalyticsById,
    
    
 
@@ -59,7 +59,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.get ('/getWalletDetails', getWalletDetails)
  router.post('/validate', ValidateACctDetails)
  router.post('/track/:promiseTitleId/:shareToken', trackShareAnalytics);
- router.get('/analytics/:promiseTitleId', getShareLinkAnalytics);
+ router.get('/analytics/:promiseTitleId', getShareAnalyticsById);
 
 
 

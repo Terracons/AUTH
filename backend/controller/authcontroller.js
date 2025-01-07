@@ -1246,31 +1246,41 @@ export const trackShareAnalytics = async (req, res) => {
 
 
 
-export const getShareLinkAnalytics = async (req, res) => {
+export const getShareAnalyticsById = async (req, res) => {
     const { promiseTitleId } = req.params;
 
     try {
+        // 1. Find the user who has the specific promise title with the given promiseTitleId
         const user = await User.findOne({ "promiseTitle._id": promiseTitleId });
-        
+
         if (!user) {
-            return res.status(404).json({ message: "User or Promise not found." });
+            return res.status(404).json({ message: "User or promise not found." });
         }
 
-        const promise = user.promiseTitle.id(promiseTitleId);  // Find the specific promiseTitle
-        
+        // 2. Retrieve the specific promise from the user's promiseTitle array
+        const promise = user.promiseTitle.find(p => p._id.toString() === promiseTitleId);
+
         if (!promise) {
             return res.status(404).json({ message: "Promise not found." });
         }
 
+        // 3. Retrieve the shareAnalytics data for the promise
         const analytics = promise.shareAnalytics;
 
+        // 4. If no analytics data is found, return an appropriate message
+        if (analytics.length === 0) {
+            return res.status(200).json({ message: "No analytics data found for this promise." });
+        }
+
+        // 5. Return the analytics data as a response
         return res.status(200).json({
             success: true,
-            accessCount: analytics.length,
-            accessData: analytics,
+            message: "Analytics data retrieved successfully.",
+            analytics: analytics
         });
+
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Server error. Could not retrieve analytics.' });
+        return res.status(500).json({ message: "Error retrieving analytics." });
     }
 };
