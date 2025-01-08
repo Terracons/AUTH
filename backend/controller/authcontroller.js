@@ -199,11 +199,12 @@ export const requestPasswordReset = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
     try {
+   
 
         
-        const {password, resetToken} = req.body
+        const {password,resetToken} = req.body
 
-        // console.log(password);
+        // console.log(password);a
         
 
    
