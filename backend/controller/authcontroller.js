@@ -177,7 +177,7 @@ export const requestPasswordReset = async (req, res) => {
       await user.save();
   
       const url = "https://gift-pixel.vercel.app"
-      const resetLink = `${url}/reset-password/:${resetToken}`;
+      const resetLink = `${url}/reset-password/${resetToken}`;
   
       // Setup the email options
       const mailOptions = {
