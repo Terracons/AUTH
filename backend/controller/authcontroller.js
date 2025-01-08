@@ -202,9 +202,9 @@ export const resetPassword = async (req, res) => {
         const  resetToken = req.params.token
 
         
-        const {newPassword} = req.body
+        const {password} = req.body
 
-        console.log(newPassword);
+        // console.log(password);
         
 
    
@@ -222,12 +222,12 @@ export const resetPassword = async (req, res) => {
         }
 
        
-        if (newPassword.length < 6) {
+        if (password.length < 6) {
             return res.status(400).json({ message: 'Password must be at least 6 characters long' });
         }
 
         
-        const hashedPassword = await bycrptjs.hash(newPassword, 10);
+        const hashedPassword = await bycrptjs.hash(password, 10);
 
         
         user.password = hashedPassword;
