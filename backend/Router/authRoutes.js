@@ -40,7 +40,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post("/logout",logout)
  router.post("/verify-email",verifyEmail)
  router.post("/forgot-password",forgotPassword)
- router.post("/reset-password/:token",requestPasswordReset)
+ router.post("/reset-password",requestPasswordReset)
  router.get("/veiw-user",viewUser)
  router.put("/update-promise",authenticateToken,verifytoken, updatePromise);
  router.delete('/deletePromise', deletePromise);
