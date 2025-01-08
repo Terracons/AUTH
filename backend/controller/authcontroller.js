@@ -9,11 +9,16 @@ import axios from "axios"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
 import useragent from 'useragent';
-import requestIp  from "request-ip"
+import { transporter } from "../mailTrap/nodemailer.js";
+import { PASSWORD_RESET_REQUEST_TEMPLATE } from "../mailTrap/emailTemplate.js";
+import { setResetLink } from "../mailTrap/link.js";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY; 
 
 dotenv.config()
+
+
+
 
 export const signup = async (req, res)=>{
     const{email, password, firstName , lastName, username, phone} = req.body;
@@ -146,34 +151,98 @@ export const logout= (req, res)=>{
     
 }
 
-export const forgotPassword = async(req, res) =>{
-    const {email} = req.body;
+
+export const requestPasswordReset = async (req, res) => {
     try {
-        const user = await user.findOne({email})
-        if(!user){
+      const { email } = req.body;
+  
+      
+      const user = await User.findOne({ email });
+
+      console.log(email);
+      
+  
+      if (!user) {
+        return res.status(400).json({ message: 'User not found' });
+      }
+  
+      
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenExpiredAt = new Date();
+      resetTokenExpiredAt.setHours(resetTokenExpiredAt.getHours() + 1);  
+  
+      
+      user.resetPasswordToken = resetToken;
+      user.resetPasswordExpiredAt = resetTokenExpiredAt;
+      await user.save();
+  
+      
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/:${resetToken}`;
+
+
+  
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: 'Password Reset Request',
+        html: `${PASSWORD_RESET_REQUEST_TEMPLATE(resetLink)}`
+      };
+  
+      await transporter.sendMail(mailOptions);
+  
+      return res.status(200).json({ message: 'Password reset link sent' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: 'Error sending reset email' });
+    }
+  };
+  
+
+
+
+
+
+
+
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    
+    try {
+        // Check if the user exists
+        const user = await user.findOne({ email });
+        if (!user) {
             return res.status(400).json({
-                success:false,
-                message:"invalid email address"
-            })
+                success: false,
+                message: "Invalid email address"
+            });
         }
-        const resetToken = crypto.randomBytes(20).toString("hex")
-        const resetPasswordExpiredAt = Date.now()+1*60*60*1000
-        user.resetPasswordToken= resetToken,
-        user.resetPasswordExpiredAt =resetPasswordExpiredAt
+
+        // Generate a reset token and expiration time
+        const resetToken = crypto.randomBytes(20).toString("hex");
+        const resetPasswordExpiredAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour expiration
+
+        // Save the reset token and expiration time in the user document
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpiredAt = resetPasswordExpiredAt;
         await user.save();
 
-        await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`)
+        // Send the password reset email
+        await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+
+        // Respond with success
         res.status(200).json({
-            success:true,
-            message:"verification code sent",
-            data:newcode
-        })
+            success: true,
+            message: "Verification code sent",
+            data: resetToken // Corrected variable to resetToken
+        });
         
     } catch (error) {
-        return res.status(400).json({sucess:false, message :error.message})
-        
+        return res.status(400).json({
+            success: false, // Fixed typo here
+            message: error.message
+        });
     }
-}
+};
 
 export const resetpassword = async(req, res)=>{
     

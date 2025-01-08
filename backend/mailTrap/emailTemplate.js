@@ -1,3 +1,8 @@
+// import { getResetLink } from '../mailTrap/link.js';
+
+// const link = getResetLink();
+// console.log(link);
+
 export const VERIFICATION_EMAIL_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">
@@ -65,7 +70,7 @@ export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
 </html>
 `;
 
-export const PASSWORD_RESET_REQUEST_TEMPLATE = `
+export const PASSWORD_RESET_REQUEST_TEMPLATE = (resetLink) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,7 +87,7 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
     <p>We received a request to reset your password. If you didn't make this request, please ignore this email.</p>
     <p>To reset your password, click the button below:</p>
     <div style="text-align: center; margin: 30px 0;">
-      <a href="{resetURL}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+      <a href="${resetLink}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
     </div>
     <p>This link will expire in 1 hour for security reasons.</p>
     <p>Best regards,<br>Gift Pixel</p>
