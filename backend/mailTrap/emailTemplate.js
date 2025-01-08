@@ -1,7 +1,4 @@
-// import { getResetLink } from '../mailTrap/link.js';
 
-// const link = getResetLink();
-// console.log(link);
 
 export const VERIFICATION_EMAIL_TEMPLATE = `
 <!DOCTYPE html>
