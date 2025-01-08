@@ -4,7 +4,6 @@ import {
     logout, 
     signup, 
     verifyEmail, 
-    forgotPassword,
     // checkAuth,
     viewUser, 
     updatePromise,  
@@ -26,6 +25,7 @@ import {
     trackShareAnalytics,
     getShareAnalyticsById,
     requestPasswordReset,
+    resetPassword,
    
    
 
@@ -39,8 +39,8 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post("/signup",signup)
  router.post("/logout",logout)
  router.post("/verify-email",verifyEmail)
- router.post("/forgot-password",forgotPassword)
  router.post("/reset-password",requestPasswordReset)
+ router.post("/password-update/:token", resetPassword)
  router.get("/veiw-user",viewUser)
  router.put("/update-promise",authenticateToken,verifytoken, updatePromise);
  router.delete('/deletePromise', deletePromise);
