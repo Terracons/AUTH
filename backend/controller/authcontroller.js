@@ -1270,7 +1270,22 @@ export const trackShareAnalytics = async (req, res) => {
             deviceCategory = 'laptop';
         }
 
-        // 5. Prepare the analytics object
+        // 5. Track the referrer (social media platform)
+        const referrer = req.get('Referrer') || 'unknown'; // Track where the user came from
+        let socialMediaPlatform = 'none';
+        
+        if (referrer.includes('facebook.com')) {
+            socialMediaPlatform = 'Facebook';
+        } else if (referrer.includes('twitter.com')) {
+            socialMediaPlatform = 'Twitter';
+        } else if (referrer.includes('linkedin.com')) {
+            socialMediaPlatform = 'LinkedIn';
+        }
+         else if (referrer.includes('whatsapp.com')) {
+            socialMediaPlatform = 'Whatsapp';
+        }
+
+        // 6. Prepare the analytics object
         const analyticsData = {
             os,
             deviceType,
@@ -1279,17 +1294,16 @@ export const trackShareAnalytics = async (req, res) => {
             city,
             country,
             isp,
-            deviceCategory
+            deviceCategory,
+            socialMediaPlatform, // Add platform to the analytics
         };
 
-        // 6. Store the analytics in the shareAnalytics field
+        // 7. Store the analytics in the shareAnalytics field
         promise.shareAnalytics.push(analyticsData);
         await user.save();
 
-        // 7. Return a response with the promise or further redirect the user
-        return res.status(200).json({ message: "Analytics captured successfully",
-            success: true,
-         });
+        // 8. Return a response with the promise or further redirect the user
+        return res.status(200).json({ message: "Analytics captured successfully", success: true });
 
     } catch (error) {
         console.error(error);
