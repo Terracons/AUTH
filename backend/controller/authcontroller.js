@@ -687,45 +687,47 @@ export const sharePromise = async (req, res) => {
 
     try {
         // First, I look for the user who owns the promise title by searching for the promiseTitleId in the user's promises.
-        // This ensures that I get the correct user document who has the promise.
         const user = await User.findOne({ "promiseTitle._id": promiseTitleId });
 
-        // If no user is found, I return a 404 error letting the client know that the user doesn't exist.
+        // If no user is found, return a 404 error.
         if (!user) {
             return res.status(404).json({ message: "User not found." });
         }
 
         // Now that I have the user, I look for the specific promise within that user's promiseTitle array.
-        const promise = user.promiseTitle.id(promiseTitleId); // I search for the promise by its ID
+        const promise = user.promiseTitle.id(promiseTitleId); // Search for the promise by its ID
 
-        // If the promise is not found within the user's list, I return a 404 error indicating the promise is missing.
+        // If the promise is not found within the user's list, return a 404 error.
         if (!promise) {
             return res.status(404).json({ message: "Promise not found." });
-        } 
+        }
 
-
-        // At this point, I generate a unique share token to create a shareable link for the promise.
-        // This will allow others to access the promise via the generated link.
+        // Generate a unique share token for the promise link.
         const shareToken = uuidv4(); // Generate a unique token for the shareable link
 
-        // I then assign this generated share token to the promise object and save it to the database.
+        // Assign the generated share token to the promise object and save it to the database.
         promise.shareToken = shareToken;
-        await user.save(); // I save the user document with the updated promise that includes the share token.
+        await user.save(); // Save the user document with the updated promise that includes the share token.
 
-        // Once the share token is saved, I construct the shareable link that will be used for sharing.
-        // The share link will point to the specific promise gift page using the promiseTitleId.
-        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}/${shareToken}`;
+        // Extract UTM parameters from the query string or set defaults
+        const utmSource = req.query.utm_source || 'unknown';
+        const utmMedium = req.query.utm_medium || 'unknown';
+        const utmCampaign = req.query.utm_campaign || 'unknown';
+        const utmTerm = req.query.utm_term || 'unknown';
+        const utmContent = req.query.utm_content || 'unknown';
 
-        // Finally, I return a success response to the client with the generated shareable link.
+        // Construct the shareable link with UTM parameters
+        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}/${shareToken}?utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}&utm_term=${utmTerm}&utm_content=${utmContent}`;
+
+        // Return a success response with the shareable link
         return res.status(200).json({
             success: true,
             message: "Shareable link generated successfully.",
             shareLink: shareLink,
-            shareToken : shareToken
+            shareToken: shareToken
         });
     } catch (error) {
-        // If any error occurs during the process, I log it for debugging and send a server error response.
-        // This helps in handling unexpected issues gracefully.
+        // If any error occurs, log it and send a server error response.
         console.error(error);
         return res.status(500).json({ message: "Server error. Could not generate shareable link." });
     }
@@ -1270,7 +1272,14 @@ export const trackShareAnalytics = async (req, res) => {
             deviceCategory = 'laptop';
         }
 
-        // 5. Track the referrer (social media platform)
+        // 5. Capture UTM parameters from the query string (e.g., ?utm_source=facebook&utm_medium=social)
+        const utmSource = req.query.utm_source || 'unknown';
+        const utmMedium = req.query.utm_medium || 'unknown';
+        const utmCampaign = req.query.utm_campaign || 'unknown';
+        const utmTerm = req.query.utm_term || 'unknown';
+        const utmContent = req.query.utm_content || 'unknown';
+
+        // 6. Track the referrer (social media platform)
         const referrer = req.get('Referrer') || 'unknown'; // Track where the user came from
         let socialMediaPlatform = 'none';
         
@@ -1280,12 +1289,11 @@ export const trackShareAnalytics = async (req, res) => {
             socialMediaPlatform = 'Twitter';
         } else if (referrer.includes('linkedin.com')) {
             socialMediaPlatform = 'LinkedIn';
-        }
-         else if (referrer.includes('whatsapp.com')) {
+        } else if (referrer.includes('whatsapp.com')) {
             socialMediaPlatform = 'Whatsapp';
         }
 
-        // 6. Prepare the analytics object
+        // 7. Prepare the analytics object including UTM parameters and social media platform
         const analyticsData = {
             os,
             deviceType,
@@ -1296,13 +1304,18 @@ export const trackShareAnalytics = async (req, res) => {
             isp,
             deviceCategory,
             socialMediaPlatform, // Add platform to the analytics
+            utmSource,
+            utmMedium,
+            utmCampaign,
+            utmTerm,
+            utmContent
         };
 
-        // 7. Store the analytics in the shareAnalytics field
+        // 8. Store the analytics in the shareAnalytics field
         promise.shareAnalytics.push(analyticsData);
         await user.save();
 
-        // 8. Return a response with the promise or further redirect the user
+        // 9. Return a response with the promise or further redirect the user
         return res.status(200).json({ message: "Analytics captured successfully", success: true });
 
     } catch (error) {
