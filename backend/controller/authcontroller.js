@@ -1000,26 +1000,9 @@ export const paymentGateway = async (req, res) => {
 
 export const paymentVerification = async (req, res) => {
     const { reference, trxref, requestId, username } = req.body;
-    const token = req.headers['authorization']?.split(' ')[1];  // Extract token
-
-    if (!token) {
-        return res.status(400).json({ success: false, message: 'Token is required.' });
-    }
+   
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const payerId = decoded.userId;  
-
-        if (!payerId) {
-            return res.status(404).json({ success: false, message: 'Payer not found.' });
-        }
-
-        const payer = await User.findById(payerId);
-        if (!payer) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-        
-        const payerName = payer.username;  // Payer's username
 
         if (!reference || !trxref || !username) {
             return res.status(400).json({ success: false, message: 'Missing required fields.' });
@@ -1069,9 +1052,8 @@ export const paymentVerification = async (req, res) => {
             // Update the wallet balance and transaction in one save operation
             recipientUser.wallet.balance += paidAmount;
             recipientUser.wallet.transactions.push({
-                payee: payerName,
                 amount: paidAmount,
-                description: `${payerName} has paid ${paidAmount} into your wallet.`,
+                description: `A user has paid  ${paidAmount} into your wallet.`,
                 Transaction_ID: reference,
                 timestamp: new Date()
             });
