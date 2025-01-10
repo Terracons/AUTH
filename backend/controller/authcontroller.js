@@ -931,7 +931,11 @@ export const getUserData = async (req, res) => {
             user: {
                 username: user.username, // The user's username
                 email: user.email,       // The user's email address
-                // I can include other user details like profile picture, etc.
+                firstName : user.firstName,
+                lastName : user.lastName,
+                phoneNumber : user.phone,
+                password : user.password
+               
             }
         });
     } catch (error) {

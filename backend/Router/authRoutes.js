@@ -26,6 +26,7 @@ import {
     getShareAnalyticsById,
     requestPasswordReset,
     resetPassword,
+    getUserData,
    
    
 
@@ -42,6 +43,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post("/reset-password",requestPasswordReset)
  router.post("/password-update/:token", resetPassword)
  router.get("/veiw-user",viewUser)
+ router.get("/getUserData", authenticateToken, verifytoken, getUserData)
  router.put("/update-promise",authenticateToken,verifytoken, updatePromise);
  router.delete('/deletePromise', deletePromise);
  router.get('/user/promises',authenticateToken , verifytoken , getPromiseDetails);
