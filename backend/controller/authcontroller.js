@@ -732,6 +732,68 @@ export const sharePromise = async (req, res) => {
 };
 
 
+export const getAllPromises =  async (req, res) =>{
+
+    const {username} = req.params
+
+
+    try {
+        // Find the user by their username
+        const user = await User.findOne({ username }).exec();
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Collect all promises and their requests
+        const allRequestsPromises = [];
+
+        // Iterate through each promise title and each request within that promise
+        user.promiseTitle.forEach(promise => {
+            // promise.requests.forEach(request => {
+                // // For each request, create a promise to process it
+                // const requestProcessingPromise = new Promise((resolve, reject) => {
+                //     // Simulate some asynchronous task, e.g., database operation or network request
+                //     setTimeout(() => {
+                //         if (request.paid) {
+                //             resolve(`Request ${request._id} has been paid.`);
+                //         } else {
+                //             resolve(`Request ${request._id} is pending.`);
+                //         }
+                //     }, 1000);  // Example delay
+                // });
+
+                // Push each request's promise into the array
+                allRequestsPromises.push(promise.title);
+            });
+        // });
+
+        // Use Promise.all to wait for all promises to resolve
+        const results = await Promise.all(allRequestsPromises);
+
+         res.status(200).json({
+            success : true,
+            message : results
+         })
+        console.log('All request results:', results);
+
+        return results;
+    } catch (error) {
+        console.error('Error while processing user promises:', error);
+    }
+}
+
+export const shareAllPromise = async (req, res) => {
+    const {username} = req.body
+
+    if (!username ) {
+        res.status(404).json({
+            success: false,
+            message : "No user found!"
+        })
+    }
+}
+
 export const getPromiseDetailsById = async (req, res) => {
     const { promiseTitleId } = req.params; // Extract the promiseTitleId from the URL parameters.
     // const {shareToken} = req.query

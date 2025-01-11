@@ -27,6 +27,7 @@ import {
     requestPasswordReset,
     resetPassword,
     getUserData,
+    getAllPromises,
    
    
 
@@ -62,6 +63,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post('/validate', ValidateACctDetails)
  router.post('/track/:promiseTitleId/:shareToken', trackShareAnalytics);
  router.get('/analytics/:promiseTitleId', getShareAnalyticsById);
+ router.get("/promises/:username", getAllPromises)
 
 
 
