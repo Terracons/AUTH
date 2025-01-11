@@ -764,7 +764,7 @@ export const getAllPromises =  async (req, res) =>{
                 // });
 
                 // Push each request's promise into the array
-                allRequestsPromises.push(promise);
+                allRequestsPromises.push(promise.title);
             });
         // });
 
