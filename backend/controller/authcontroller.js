@@ -714,7 +714,7 @@ export const sharePromise = async (req, res) => {
 
         // Once the share token is saved, I construct the shareable link that will be used for sharing.
         // The share link will point to the specific promise gift page using the promiseTitleId.
-        const shareLink = `https://gift-pixel.vercel.app/promise-gift/${promiseTitleId}/${shareToken}`;
+        const shareLink = `https://giftpixel.vercel.app/promise-gift/${promiseTitleId}/${shareToken}`;
 
         // Finally, I return a success response to the client with the generated shareable link.
         return res.status(200).json({
@@ -1023,7 +1023,7 @@ export const paymentGateway = async (req, res) => {
                 email: email,  // The email of the user making the payment
                 amount: amount * 100,  // Amount is expected in kobo, so I multiply the amount by 100
                 order_id: orderId,  // A unique order identifier
-                callback_url: "https://gift-pixel.vercel.app/payment-success",  // URL to redirect after payment
+                callback_url: "https://giftpixel.vercel.app/payment-success",  // URL to redirect after payment
             },
             {
                 headers: {
