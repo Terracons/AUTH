@@ -1011,6 +1011,8 @@ export const getUserData = async (req, res) => {
 
 
 
+
+
 export const paymentGateway = async (req, res) => {
     const { amount, email, orderId } = req.body;  // I extract the payment details (amount, email, and orderId) from the request body.
 
