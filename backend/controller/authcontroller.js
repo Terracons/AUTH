@@ -1010,7 +1010,7 @@ export const getUserData = async (req, res) => {
 };
 
 
-s
+
 
 
 export const paymentGateway = async (req, res) => {
