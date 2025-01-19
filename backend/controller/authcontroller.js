@@ -1009,8 +1009,6 @@ export const getUserData = async (req, res) => {
     }
 };
 
-y
-s
 
 
 export const paymentGateway = async (req, res) => {
