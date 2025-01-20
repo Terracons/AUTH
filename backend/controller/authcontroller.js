@@ -1458,7 +1458,7 @@ export const checkPaymentPin = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Please create a payment pin' });
         }
 
-        const isValid = await bcryptjs.compare(paymentPin, user.paymentPin);  // Compare the pin
+        const isValid = await bycrptjs.compare(paymentPin, user.paymentPin);  // Compare the pin
         if (isValid) {
             return res.status(200).json({ success: true, message: 'Payment pin is correct' });
         } else {
