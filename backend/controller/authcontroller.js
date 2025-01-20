@@ -1400,3 +1400,104 @@ export const getShareAnalyticsById = async (req, res) => {
         return res.status(500).json({ message: "Error retrieving analytics." });
     }
 };
+
+export const createPaymentPin = async (req, res) => {
+    const { paymentPin } = req.body;
+
+    try {
+        // Validate the payment pin (e.g., length between 4 and 6 digits)
+        if (paymentPin.length < 4 || paymentPin.length > 4) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment pin must be 4 digits'
+            });
+        }
+
+        const saltRounds = 10;
+    
+        const hashedPaymentPin = await bycrptjs.hash(paymentPin, saltRounds);
+
+        // Find the user and set their payment pin
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'User not found' });
+        }
+
+        // Check if the user already has a payment pin
+        if (user.paymentPin) {
+            return res.status(400).json({ success: false, message: 'Payment pin is already set' });
+        }
+
+        // Save the new payment pin
+        user.paymentPin = hashedPaymentPin;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Payment pin created successfully'
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
+export const checkPaymentPin = async (req, res) => {
+    const { paymentPin } = req.body;
+
+    try {
+        const user = await User.findById(req.userId).select('+paymentPin');  // Use the userId from the decoded token
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'User not found' });
+        }
+
+        // Check if the user's payment pin is empty or not set
+        if (!user.paymentPin) {
+            return res.status(400).json({ success: false, message: 'Please create a payment pin' });
+        }
+
+        const isValid = await bcryptjs.compare(paymentPin, user.paymentPin);  // Compare the pin
+        if (isValid) {
+            return res.status(200).json({ success: true, message: 'Payment pin is correct' });
+        } else {
+            return res.status(400).json({ success: false, message: 'Incorrect payment pin' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
+
+export const changePaymentPin = async (req, res) => {
+    const { oldPaymentPin, newPaymentPin } = req.body;
+
+    try {
+        const user = await User.findById(req.userId).select('+paymentPin');  // Use the userId from the decoded token
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'User not found' });
+        }
+
+        const isValid = await bycrptjs.compare(oldPaymentPin, user.paymentPin);  // Check if old pin is correct
+        if (!isValid) {
+            return res.status(400).json({ success: false, message: 'Old payment pin is incorrect' });
+        }
+
+        // Validate new payment pin length
+        if (newPaymentPin.length < 4 || newPaymentPin.length > 6) {
+            return res.status(400).json({ success: false, message: 'New payment pin must be between 4 and 6 digits' });
+        }
+
+        // Update the payment pin
+        user.paymentPin = await bycrptjs.hash(newPaymentPin, 10);
+        await user.save();
+
+        return res.status(200).json({ success: true, message: 'Payment pin changed successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+};

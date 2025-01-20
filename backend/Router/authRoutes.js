@@ -28,6 +28,9 @@ import {
     resetPassword,
     getUserData,
     getAllPromises,
+    createPaymentPin,
+    checkPaymentPin,
+    changePaymentPin,
    
    
 
@@ -64,6 +67,11 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post('/track/:promiseTitleId/:shareToken', trackShareAnalytics);
  router.get('/analytics/:promiseTitleId', getShareAnalyticsById);
  router.get("/promises/:username", getAllPromises)
+ router.post('/create-payment-pin', verifytoken, createPaymentPin); 
+ router.post('/check-payment-pin', verifytoken, checkPaymentPin);   
+ router.post('/change-payment-pin', verifytoken, changePaymentPin);  
+ 
+
 
 
 

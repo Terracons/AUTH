@@ -97,7 +97,14 @@ const userSchema = new mongoose.Schema({
           timestamp: { type: Date, default: Date.now },  // Transaction timestamp
           Transaction_ID : { type: String, required: false },
         }]
-      }
+      },
+
+    paymentPin: {
+        type: String, 
+        required: true, 
+        minlength: 4,
+        select: false 
+    },
 }, { timestamps: true });
 
 export const User = mongoose.model('User', userSchema);
