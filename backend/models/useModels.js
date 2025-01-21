@@ -101,7 +101,7 @@ const userSchema = new mongoose.Schema({
 
     paymentPin: {
         type: String, 
-        required: true, 
+        required: false, 
         minlength: 4,
         select: false 
     },
