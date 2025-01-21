@@ -1501,3 +1501,88 @@ export const changePaymentPin = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+
+
+export const withdrawal = async (req, res) => {
+    const { amount } = req.body; 
+    const token = req.headers.authorization?.split(' ')[1];
+
+    try {
+        // Check if token is provided
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'Token is required.' });
+        }
+
+        // Verify and decode the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+        console.log(decoded);
+        
+        const { userId } = decoded; 
+
+        // Check if the required fields are provided
+        if (!amount) {
+            return res.status(400).json({ success: false, message: 'Missing required fields.' });
+        }
+
+        // Check if the amount is positive
+        if (amount <= 0) {
+            return res.status(400).json({ success: false, message: 'Amount should be greater than 0.' });
+        }
+
+        // Find the user based on the decoded userId
+        const user = await User.findById(userId).select('+wallet.balance');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        // Check if the wallet exists
+        if (!user.wallet || user.wallet.balance === undefined) {
+            return res.status(400).json({ success: false, message: 'User wallet is not set up correctly.' });
+        }
+
+        // Check if the user has enough balance for the withdrawal
+        if (user.wallet.balance < amount) {
+            return res.status(400).json({ success: false, message: 'Insufficient funds in your wallet.' });
+        }
+
+        // Deduct the amount from the user's wallet balance
+        user.wallet.balance -= amount;
+
+        // Add the withdrawal transaction to the user's wallet transactions
+        const transactionId = generateTransactionID(); // Generate a unique transaction ID for the withdrawal
+        user.wallet.transactions.push({
+            userId: user._id,
+            amount: -amount, // Use negative value to indicate a withdrawal
+            description: `A Withdrawal of ${amount} from your wallet.`,
+            Transaction_ID: transactionId,
+            timestamp: new Date(),
+        });
+
+        // Add a notification about the withdrawal
+        await addNotification(user._id, `You have successfully withdrawn ${amount} from your wallet.`);
+
+        // Save the updated user data to the database
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: `Withdrawal of ${amount} was successful.`,
+            balance: user.wallet.balance, // Return the updated balance
+        });
+    } catch (error) {
+        console.error('Error processing withdrawal:', error);
+
+        // Handle errors for invalid or expired token
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(401).json({ success: false, message: 'Invalid or expired token.' });
+        }
+
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+};
+
+
+function generateTransactionID() {
+    return 'TXN' + new Date().getTime();
+}

@@ -31,6 +31,7 @@ import {
     createPaymentPin,
     checkPaymentPin,
     changePaymentPin,
+    withdrawal,
    
    
 
@@ -70,7 +71,7 @@ import { authenticateToken, verifytoken } from "../middleware/verifyToken.js"
  router.post('/create-payment-pin', verifytoken, createPaymentPin); 
  router.post('/check-payment-pin', verifytoken, checkPaymentPin);   
  router.post('/change-payment-pin', verifytoken, changePaymentPin);  
- 
+ router.post('/withdraw', withdrawal); 
 
 
 
