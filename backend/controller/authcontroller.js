@@ -714,7 +714,7 @@ export const sharePromise = async (req, res) => {
 
         // Once the share token is saved, I construct the shareable link that will be used for sharing.
         // The share link will point to the specific promise gift page using the promiseTitleId.
-        const shareLink = `https://giftpixel.vercel.app/promise-gift/${promiseTitleId}/${shareToken}`;
+        const shareLink = `http://localhost:5173/promise-gift/${promiseTitleId}/${shareToken}`;
 
         // Finally, I return a success response to the client with the generated shareable link.
         return res.status(200).json({
