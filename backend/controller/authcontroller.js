@@ -1053,7 +1053,7 @@ export const paymentGateway = async (req, res) => {
                 timestamp: new Date()
             });
 
-            // Use findOneAndUpdate for atomic update to avoid version conflictsjikdj
+            // Use findOneAndUpdate for atomic update to avoid version conflicts
             await recipientUser.save();
 
             res.json({
