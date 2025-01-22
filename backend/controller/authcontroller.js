@@ -1011,63 +1011,62 @@ export const getUserData = async (req, res) => {
 
 
 
-const { amount, email, orderId, username } = req.body;
+export const paymentGateway = async (req, res) => {
+    const { amount, email, orderId, username } = req.body;  // I extract the payment details (amount, email, and orderId) from the request body.
 
-if (!amount || !email || !orderId || !username) {
-    return res.status(400).json({
-        success: false,
-        message: 'Missing required fields'
-    });
-}
-
-try {
-    const response = await axios.post(
-        'https://api.paystack.co/transaction/initialize', 
-        {
-            email: email,
-            amount: amount * 100,
-            order_id: orderId,
-            callback_url: "https://giftpixel.vercel.app/payment-success",
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+    try {
+        // I make a POST request to Paystack's API to initialize the payment.
+        // The API expects the amount in kobo (1 kobo = 1/100 of a Naira), so I multiply the amount by 100.
+        const response = await axios.post(
+            'https://api.paystack.co/transaction/initialize',  // Paystack endpoint to initialize payment
+            {
+                email: email,  // The email of the user making the payment
+                amount: amount * 100,  // Amount is expected in kobo, so I multiply the amount by 100
+                order_id: orderId,  // A unique order identifier
+                callback_url: "https://giftpixel.vercel.app/payment-success",  // URL to redirect after payment
             },
+            {
+                headers: {
+                    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,  // I add the authorization header with the Paystack secret key.
+                },
+            }
+        );
+
+        // I log the response from Paystack to inspect the data for debugging purposes.
+        console.log(response);
+
+        // If Paystack returns a successful status, I send back the authorization URL to the frontend so the user can complete the payment.
+        if (response.data.status === true) {
+            res.json({
+                success: true,
+                authorization_url: response.data.data.authorization_url,  // The URL where the user can authorize the payment
+                reference: response.data.data.reference,  // The payment reference for tracking
+            });
+        } else {
+            // If Paystack couldn't initialize the payment, I send a failure message.
+        
+            recipientUser.wallet.transactions.push({
+                amount,
+                description: `A transaction of ${amount} git failed `,
+                Transaction_ID: reference,
+                timestamp: new Date()
+            });
+
+            res.json({
+                success: false,
+                message: 'Payment initialization failed',  // Indicate that something went wrong with initializing the payment
+            });
         }
-    );
-
-    if (response.data.status === true) {
-        res.json({
-            success: true,
-            authorization_url: response.data.data.authorization_url,
-            reference: response.data.data.reference,
-        });
-    } else {
-        const reference = response.data.data.reference || "unknown_reference"; 
-        const recipientUser = await User.findOne({ username });
-
-        recipientUser.wallet.transactions.push({
-            amount,
-            description: `A transaction of ${amount} got failed`,
-            Transaction_ID: reference,
-            timestamp: new Date(),
-        });
-
-        await recipientUser.save();
-
-        res.json({
+    } catch (error) {
+        // If an error occurs during the API request, I log the error and send a 500 status with a failure message.
+        console.log(error);
+        
+        res.status(500).json({
             success: false,
-            message: 'Payment initialization failed',
+            message: 'Error processing payment request',  // Notify the client that there was a problem with the payment request
         });
     }
-} catch (error) {
-    console.error('Payment initialization error:', error);  // More specific error logging
-    res.status(500).json({
-        success: false,
-        message: 'Error processing payment request',
-    });
 }
-
 
 export const paymentVerification = async (req, res) => {
     const { reference, trxref, requestId, username } = req.body;
@@ -1086,6 +1085,15 @@ export const paymentVerification = async (req, res) => {
         });
 
         if (paymentVerificationResponse.data.status !== true) {
+
+            const recipientUser = await User.findOne({ username });
+
+            recipientUser.wallet.transactions.push({
+                amount,
+                description: `A transaction of ${amount} got failed`,
+                Transaction_ID: reference,
+                timestamp: new Date(),
+            });
             return res.status(400).json({ success: false, message: 'Payment verification failed.' });
         }
 
