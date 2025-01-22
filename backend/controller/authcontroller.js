@@ -1012,7 +1012,7 @@ export const getUserData = async (req, res) => {
 
 
 export const paymentGateway = async (req, res) => {
-    const { amount, email, orderId } = req.body;  // I extract the payment details (amount, email, and orderId) from the request body.
+    const { amount, email, orderId, username } = req.body;  // I extract the payment details (amount, email, and orderId) from the request body.
 
     try {
         // I make a POST request to Paystack's API to initialize the payment.
@@ -1044,6 +1044,18 @@ export const paymentGateway = async (req, res) => {
             });
         } else {
             // If Paystack couldn't initialize the payment, I send a failure message.
+            const recipientUser = await User.findOne({ username });
+
+            recipientUser.wallet.transactions.push({
+                amount,
+                description: `A transaction of ${amount} got failed`,
+                Transaction_ID: reference,
+                timestamp: new Date()
+            });
+
+            // Use findOneAndUpdate for atomic update to avoid version conflicts
+            await recipientUser.save();
+
             res.json({
                 success: false,
                 message: 'Payment initialization failed',  // Indicate that something went wrong with initializing the payment
