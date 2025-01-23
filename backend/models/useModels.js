@@ -98,12 +98,12 @@ const userSchema = new mongoose.Schema({
           status: {
             type: String,
             enum: ['Failed', 'Approved', 'Pending'],
-            required: true
+            required: false
         },
           transactionType: {
             type: String,
             enum: ['deposit', 'withdrawal', 'payment', 'refund'],
-            required: true
+            required: false
         },
           timestamp: { type: Date, default: Date.now },  // Transaction timestamp
           Transaction_ID : { type: String, required: false },
