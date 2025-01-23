@@ -1045,12 +1045,6 @@ export const paymentGateway = async (req, res) => {
         } else {
             // If Paystack couldn't initialize the payment, I send a failure message.
         
-            recipientUser.wallet.transactions.push({
-                amount,
-                description: `A transaction of ${amount} git failed `,
-                Transaction_ID: reference,
-                timestamp: new Date()
-            });
 
             res.json({
                 success: false,
@@ -1091,6 +1085,8 @@ export const paymentVerification = async (req, res) => {
             recipientUser.wallet.transactions.push({
                 amount,
                 description: `A transaction of ${amount} got failed`,
+                transactionType : "Deposit",
+                status: "Failed",
                 Transaction_ID: reference,
                 timestamp: new Date(),
             });
@@ -1133,6 +1129,8 @@ export const paymentVerification = async (req, res) => {
             recipientUser.wallet.transactions.push({
                 amount: paidAmount,
                 description: `A user has paid  ${paidAmount} into your wallet.`,
+                transactionType: "Deposit",
+                status: "Approved",
                 Transaction_ID: reference,
                 timestamp: new Date()
             });

@@ -93,7 +93,18 @@ const userSchema = new mongoose.Schema({
         transactions: [{
           userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Reference to the payer user
           amount: { type: Number, required: true },  // Payment amount
-          description: { type: String, required: true },  // Transaction description
+          description: { type: String, required: true }, 
+          
+          status: {
+            type: String,
+            enum: ['Failed', 'Approved', 'Pending'],
+            required: true
+        },
+          transactionType: {
+            type: String,
+            enum: ['deposit', 'withdrawal', 'payment', 'refund'],
+            required: true
+        },
           timestamp: { type: Date, default: Date.now },  // Transaction timestamp
           Transaction_ID : { type: String, required: false },
         }]
@@ -105,6 +116,16 @@ const userSchema = new mongoose.Schema({
         minlength: 4,
         select: false 
     },
-}, { timestamps: true });
+
+
+    isAdmin: {
+        type: Boolean,
+        default: false  
+    },
+},
+
+
+
+{ timestamps: true });
 
 export const User = mongoose.model('User', userSchema);
